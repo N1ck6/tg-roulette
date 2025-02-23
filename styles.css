@@ -1,0 +1,215 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+html {
+    height: 100%;
+}
+
+body {
+    width: 800px;
+    height: 800px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ccc;
+    justify-content: center;
+    align-items: center;
+    
+}
+img, button{
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+img {
+    pointer-events: none;
+}
+.game {
+    position: relative;
+    width: 800px;
+    height: 800px;
+    background: url('background.png') center/cover;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.top, .bottom {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+}
+.left, .right, .avatar {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.1s ease;
+}
+.avatar {
+    position: relative;
+    margin-top: 180px;
+}
+.lightning {
+    justify-content: center;
+    align-items: center;
+}
+.light {
+    position: absolute;
+    width: 500px;
+    height: 640px;
+    top: 16%;
+    right: 50%;
+    transform: translateX(50%);
+}
+.dark {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    display: none;
+}
+.wound {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    top: 0;
+    right: 50%;
+    transform: translateX(50%);
+    transition: all 0.1s ease;
+}
+.right img {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
+    transition: all 0.1s ease;
+}
+.expanded {
+    width: 800px !important;
+    height: 800px !important;
+}
+.player2 {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    transition: all 0.1s ease;
+    border-radius: 10px;
+}
+.ui_self, .ui_enemy {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 80px;
+}
+.ui_self {
+    left: 10px;
+    justify-content: left;
+    text-align: left;
+}
+.ui_enemy {
+    right: 10px;
+    justify-content: right;
+    text-align: right;
+}
+.heart {
+    width: 20px;
+    height: 20px;
+}
+.names {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    color: #000;
+    text-shadow:
+    -1px -1px 0 rgb(150, 150, 150),
+    1px -1px 0 rgb(180, 180, 180),
+    -1px 1px 0 rgb(180, 180, 180),
+    1px 1px 0 rgb(180, 180, 180);
+}
+.hidden {
+    display: none;
+}
+.start_screen, .end_screen {
+    position: relative;
+    flex-direction: column;
+    overflow: hidden;
+}
+.menu_pic, .end_pic {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+}
+.start_ui {
+    position: absolute;
+    top: 10%;
+    right: 50%;
+    width: 60%;
+    height: 80%;
+    transform: translateX(50%);
+    justify-content: center;
+    text-align: left;
+}
+.menu_text {
+    font-family: 'Playfair Display', serif;
+    position: absolute;
+    top: 10%;
+    right: 50%;
+    color: hsl(30, 100%, 29%);
+    text-shadow:
+    -1px -1px 0 #6d3701,
+    1px -1px 0 #6d3701,
+    -1px 1px 0 #6d3701,
+    1px 1px 0 #6d3701;
+    font-size: 50px;
+    transform: translateX(50%);
+}
+#player1, #player2 {
+    display: inline-block;
+    transition: transform 1.1s ease;
+}
+.style_button {
+    position: absolute;
+    background-color: #964B00;
+    color: white;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 60px;
+    transform: translateX(50%);
+}
+.menu_button {
+    bottom: 20%;
+    right: 50%;
+    transition: transform 1s ease;
+}
+.restart_button {
+    bottom: 10%;
+    right: 50%;
+    transform: translateX(50%);
+}
+.players {
+    position: relative;
+    top: 35%;
+    left: 10%;
+}
+.end_text {
+    position: absolute;
+    top: 45%;
+    left: 35%;
+}
