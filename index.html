@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tg Roulette</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="start_screen" id="start_screen">
+        <img src="start_menu.png" class="menu_pic">
+        <div class="start_ui">
+        <span class="menu_text">Tg Roulette</span>
+        <p class="names players" id="loading_names">
+            Player1: <span id="player1">Loading</span><br>
+            Player2: <span id="player2">Loading</span></p>
+        <button class="menu_button style_button" id="menu_button" onclick="get_started('Nicki')">Ready</button>
+        </div>
+    </div>
+    <div class="game hidden" id="game">
+        <div class="top" onclick="shoot('other.gif', 'enemy')">
+            <div class="avatar" id="player">
+                <img src="opponent.jpg" class="player2" alt="P">
+                <img src="wound.gif" class="wound hidden" id="wound">
+            </div>
+        </div>
+        <div class="lightning">
+            <img src="light.png" class="light" id="light">
+            <img src="dark.png" class="dark" id="dark">
+        </div>
+        <div class="bottom" onclick="shoot('self.gif', 'self')">
+            <div class="left" id="leftArea"></div>
+            <div class="right" id="imageContainer">
+                <img id="image" src="still.png">
+            </div>
+        </div>
+        <div class="UI" id="UI">
+            <div class="ui_self" id="ui_self">
+                <span class="names" id="own_name">You</span>
+                <div class="hearts" id="heartsContainer">
+                    <img class="heart" id="self_heart" src="hp.png">
+                    <img class="heart" id="self_heart" src="hp.png">
+                    <img class="heart" id="self_heart" src="hp.png">
+                </div>
+            </div>
+            <div class="ui_enemy" id="ui_enemy">
+                <span class="names" id="enemy_name">ErArchi</span>
+                <div class="hearts" id="heartsContainer">
+                    <img class="heart" id="enemy_heart" src="hp.png">
+                    <img class="heart" id="enemy_heart" src="hp.png">
+                    <img class="heart" id="enemy_heart" src="hp.png">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="end_screen hidden" id="end_screen">
+        <img src="end_credits.png" class="end_pic">
+        <span class="end_text names" id="end_winner">Nicki</span>
+        <button class="restart_button style_button" id="restart_button" onclick="restart()">Restart</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
