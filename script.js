@@ -127,7 +127,45 @@ function names_go() {
 function restart() {
     location.reload();
 }
-window.onload = function () {
-    // document.getElementById("loading-screen").remove();
-    document.getElementById('start_screen').classList.remove('hidden');
-};
+let loadingTimeout;
+function load_data() {
+    var images = [
+        'data/background.png',
+        'data/dark.png',
+        'data/end_credits.png',
+        'data/GGs.png',
+        'data/hp.png',
+        'data/light.png',
+        'data/opponent.jpg',
+        'data/other.gif',
+        'data/self.gif',
+        'data/start_menu.png',
+        'data/still.png',
+        'data/wound.gif'];
+    loadingTimeout = setTimeout(() => {
+        let loadingScreen = document.createElement("div");
+        loadingScreen.id = "loadingScreen";
+        loadingScreen.className = "loadingScreen";
+        loadingScreen.innerHTML = `
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        `;
+        document.body.prepend(loadingScreen);
+    }, 500);
+    var loadedImages = [];
+    for(var i in images) {
+        var img = new Image();
+        img.src = images[i];
+        loadedImages.push(img);
+    }
+    window.onload = function () {
+        clearTimeout(loadingTimeout);
+        document.getElementById('start_screen').classList.remove('hidden');
+        let loadingScreen = document.getElementById("loadingScreen");
+        if (loadingScreen) {
+            loadingScreen.remove();
+        }
+        loadedImages = null;
+    };
+}
+load_data();
