@@ -28,7 +28,7 @@ function shoot(newSrc, person) {
         take_heart('enemy', document.getElementById('player1').textContent);
         }, 250);}
     setTimeout(() => {
-        img.src = 'still.png';
+        img.src = 'data/still.png';
         isChanging = false;
         imgContainer.classList.remove('expanded');
         img.classList.remove('expanded');
@@ -127,3 +127,7 @@ function names_go() {
 function restart() {
     location.reload();
 }
+window.onload = function () {
+    // document.getElementById("loading-screen").remove();
+    document.getElementById('start_screen').classList.remove('hidden');
+};
