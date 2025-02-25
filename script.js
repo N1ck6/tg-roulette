@@ -2,6 +2,9 @@ let isChanging = false;
 function playAudioOnce(audioId) {
     document.getElementById(audioId).play();
 }
+function getRandomFloat(min, max) {
+    return Math.random() * (max - min) + min;
+}
 function shoot(newSrc, person) {
     if (isChanging) return;
     isChanging = true;
@@ -114,6 +117,54 @@ function updateDots() {
         dotsCount++;
     }
 }
+const MAX_IMAGES = 10;
+const BASE_SPEED = 1;
+let imageInterval;
+function createMovingImage() {
+    if (document.getElementById('start_screen').classList.contains('hidden')) return;
+    if (document.querySelectorAll('.moving-img').length >= MAX_IMAGES) return;
+    let img = document.createElement('div');
+    img.classList.add('moving-img');
+    let spawnTop = Math.random() < 0.5;
+    let sizeK = getRandomFloat(0.3, 0.8);
+    let posY = spawnTop ? -10 : 100;
+    let [randXmin, randXmax] = Math.random() < 0.5 ? [5, 25] : [75, 95];
+    let posX = getRandomFloat(randXmin, randXmax);
+    img.style.left = `${posX}%`;
+    img.style.top = `${posY}%`;
+    img.style.transform = `rotate(${(Math.random() * 60) - 30}deg)`;
+    img.style.width = `${sizeK * 10}%`; 
+    img.style.height = `${sizeK * 10}%`; 
+    document.getElementById('start_screen').appendChild(img);
+    animateImage(img, spawnTop, sizeK);
+}
+function animateImage(img, direction, sizeK) {
+    let speed = BASE_SPEED + (1 - sizeK) * 2;
+    function move() {
+        if (document.getElementById('start_screen').classList.contains('hidden')) {
+            img.remove();
+            return;
+        }
+        let currentY = parseFloat(img.style.top);
+        let newY = currentY + speed * (direction ? 1 : -1) / document.body.clientHeight * 100;
+        if ((direction && newY > 100) || (!direction && newY < -10)) {
+            img.remove();
+            return;
+        }
+        img.style.top = `${newY}%`;
+        requestAnimationFrame(move);
+    }
+    setTimeout(() => {move();}, 100);
+}
+function startImageSpawning() {
+    stopAllImages();
+    imageInterval = setInterval(createMovingImage, 600);
+}
+function stopAllImages() {
+    clearInterval(imageInterval);
+    document.querySelectorAll('.moving-img').forEach(img => img.remove());
+}
+setInterval(() => {if (!document.getElementById('start_screen').classList.contains('hidden')) createMovingImage();}, 600);
 function get_started(nickname) {
     playAudioOnce('button');
     if (!loading_words[0]) {
@@ -137,7 +188,6 @@ function start_game(own_name, other_name) {
     document.getElementById('start_screen').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
 }
-
 function names_go() {
     const player1 = document.getElementById('player1');
     const player2 = document.getElementById('player2');
@@ -187,7 +237,7 @@ function load_data() {
     }
     window.onload = function () {
         clearTimeout(loadingTimeout);
-        // document.getElementById('start_screen').classList.remove('hidden');
+        document.getElementById('start_screen').classList.remove('hidden');
         let loadingScreen = document.getElementById("loadingScreen");
         if (loadingScreen) {
             loadingScreen.remove();

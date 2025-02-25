@@ -26,6 +26,7 @@ body {
     background-color: #ccc;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
     
 }
 img, button{
@@ -169,14 +170,14 @@ img {
 .menu_text {
     position: absolute;
     top: 5%;
-    left: 10%;
+    left: 25%;
     color: hsl(30, 100%, 29%);
     text-shadow:
     -1px -1px 0 #6d3701,
     1px -1px 0 #6d3701,
     -1px 1px 0 #6d3701,
     1px 1px 0 #6d3701;
-    font-size: calc(11 * var(--min-unit));
+    font-size: calc(9 * var(--min-unit));
 }
 #player1, #player2 {
     display: inline-block;
@@ -204,7 +205,7 @@ img {
 .players {
     position: relative;
     top: 35%;
-    left: 20%;
+    left: 30%;
 }
 .end_text {
     position: absolute;
@@ -245,4 +246,9 @@ img {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg);}}
-
+.moving-img {
+    position: absolute;
+    background-image: url('data/ggs.png');
+    background-size: cover;
+    will-change: transform;
+}
