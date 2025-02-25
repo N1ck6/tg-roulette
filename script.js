@@ -191,13 +191,13 @@ function start_game(own_name, other_name) {
 function names_go() {
     const player1 = document.getElementById('player1');
     const player2 = document.getElementById('player2');
-    player1.style.transform = 'translate(80%, 260%)';
-    player2.style.transform = 'translate(-80%, 260%)';
+    player1.style.transform = 'translate(80%, 300%)';
+    player2.style.transform = 'translate(-80%, 300%)';
     setTimeout(() => {
         playAudioOnce('vzuh');
-        player1.style.transform = 'translate(680%, 260%)';
-        player2.style.transform = 'translate(620%, 260%)';
-        document.getElementById('menu_button').style.transform = 'translate(360%, 0)';
+        player1.style.transform = 'translate(780%, 300%)';
+        player2.style.transform = 'translate(760%, 300%)';
+        document.getElementById('menu_button').style.transform = 'translate(400%, 0)';
         setTimeout(() => {start_game(loading1.textContent, loading2.textContent);}, 1000);
     }, 1600);
 };
@@ -218,7 +218,7 @@ function load_data() {
         'data/self.gif',
         'data/start_menu.png',
         'data/still.png',
-        'data/wound.gif']; // Add audio files
+        'data/wound.gif']; // Add audio files, gear.svg
     loadingTimeout = setTimeout(() => {
         let loadingScreen = document.createElement("div");
         loadingScreen.id = "loadingScreen";
@@ -246,3 +246,17 @@ function load_data() {
     };
 }
 load_data();
+function toggleMenu() {
+    let menu = document.getElementById("settings-menu");
+    let gear = document.querySelector(".gear");
+    let overlay = document.getElementById("overlay");
+    if (menu.style.display === "block") {
+        menu.style.display = "none";
+        overlay.style.display = "none";
+        gear.style.transform = "rotate(0deg)";
+    } else {
+        menu.style.display = "block";
+        overlay.style.display = "block";
+        gear.style.transform = "rotate(180deg)";
+    }
+}

@@ -6,8 +6,17 @@
     <title>Tg Roulette</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body><div class="overlay" id="overlay"></div>
     <div class="startScreen" id="start_screen">
+        <div class="settings-btn" onclick="toggleMenu()">
+            <img src="data/gear.svg" class="gear">
+        </div>
+        <div class="menu" id="settings-menu">
+            <button class="close-btn" onclick="toggleMenu()">X</button>
+            <p><strong>Rules:</strong><br>
+                Each round, the shotgun is loaded with a random mix of live and blank shells. Players take turns choosing to shoot themselves or the enemy. A live shell results in losing one heart, a blank shell allows you to gain another turn if shot at yourself. The objective is to deplete the enemy's hearts before losing all of yours.
+            </p>
+        </div>
         <div class="start_ui">
         <span class="menu_text">Tg&nbsp;Roulette</span>
         <p class="names players" id="loading_names">
