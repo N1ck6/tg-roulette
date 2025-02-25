@@ -7,19 +7,19 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="startScreen hidden" id="start_screen">
+    <div class="startScreen" id="start_screen">
         <div class="start_ui">
-        <span class="menu_text">Tg Roulette</span>
+        <span class="menu_text">Tg&nbsp;Roulette</span>
         <p class="names players" id="loading_names">
-            Player1: <span id="player1">Loading</span><br>
-            Player2: <span id="player2">Loading</span></p>
+            Player1:&nbsp;<span id="player1">Loading</span><br>
+            Player2:&nbsp;<span id="player2">Loading</span></p>
         <button class="menu_button style_button" id="menu_button" onclick="get_started('Nicki')">Ready</button>
         </div>
     </div>
-    <div class="game hidden" id="game">
+    <div class="game hidden" id="game"> <!-- hidden -->
         <div class="top" onclick="shoot('data/other.gif', 'enemy')">
             <div class="avatar" id="player">
-                <img src="data/opponent.jpg" class="player2" alt="P">
+                <img src="data/opponent.jpg" class="player2">
                 <img src="data/wound.gif" class="wound hidden" id="wound">
             </div>
         </div>
@@ -28,7 +28,6 @@
             <img src="data/dark.png" class="dark" id="dark">
         </div>
         <div class="bottom" onclick="shoot('data/self.gif', 'self')">
-            <div class="left" id="leftArea"></div>
             <div class="right" id="imageContainer">
                 <img id="image" src="data/still.png">
             </div>
@@ -53,9 +52,18 @@
         </div>
     </div>
     <div class="endScreen hidden" id="end_screen">
-        <span class="end_text names" id="end_winner">Nicki</span>
+        <span class="end_text names" id="end_winner"></span>
         <button class="restart_button style_button" id="restart_button" onclick="restart()">Restart</button>
     </div>
+    <audio id="game_over" src="data/sounds/game_over.ogg"></audio>
+    <audio id="blank" src="data/sounds/blank.ogg"></audio>
+    <audio id="self" src="data/sounds/self.ogg"></audio>
+    <audio id="reload" src="data/sounds/reload.ogg"></audio>
+    <audio id="other" src="data/sounds/other.ogg"></audio>
+    <audio id="button" src="data/sounds/button.ogg"></audio>
+    <audio id="countdown" src="data/sounds/countdown.ogg"></audio>
+    <audio id="put" src="data/sounds/put.ogg"></audio>
+    <audio id="vzuh" src="data/sounds/vzuh.ogg"></audio>
     <script src="script.js"></script>
 </body>
 </html>

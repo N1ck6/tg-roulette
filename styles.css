@@ -1,3 +1,6 @@
+:root {
+    --min-unit: min(1vh, 1vw);
+}
 * {
     margin: 0;
     padding: 0;
@@ -7,14 +10,15 @@
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    font-family: '', cursive;
 }
 html {
     height: 100%;
 }
 
 body {
-    width: 800px;
-    height: 800px;
+    width: 100vmin;
+    height: 100vmin;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -34,33 +38,52 @@ img, button{
 img {
     pointer-events: none;
 }
-.game {
+.startScreen, .endScreen, .game {
     position: relative;
-    width: 800px;
-    height: 800px;
-    background: url('data/background.png') center/cover;
-    display: flex;
+    width: 100%;
+    height: 100%;
     flex-direction: column;
     overflow: hidden;
 }
+.startScreen {
+    background: url('data/start_menu.png') center/cover;
+}
+.game {
+    background: url('data/background.png') center/cover;
+}
+.endScreen {
+    background: url('data/end_credits.png') center/cover;
+}
 .top, .bottom {
     position: relative;
-    flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 400px;
+    align-items: flex-end;
+    height: 50%;
 }
-.left, .right, .avatar {
+.right, .avatar {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     transition: all 0.1s ease;
 }
+.right {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    right: 0;
+}
+.right img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: all 0.1s ease;
+}
 .avatar {
     position: relative;
-    margin-top: 180px;
+    width: 40%;
+    height: 40%;
 }
 .lightning {
     justify-content: center;
@@ -68,8 +91,8 @@ img {
 }
 .light {
     position: absolute;
-    width: 500px;
-    height: 640px;
+    width: 63%;
+    height: 80%;
     top: 16%;
     right: 50%;
     transform: translateX(50%);
@@ -84,56 +107,40 @@ img {
 }
 .wound {
     position: absolute;
-    width: 140px;
-    height: 140px;
-    top: 0;
-    right: 50%;
-    transform: translateX(50%);
-    transition: all 0.1s ease;
-}
-.right img {
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-    width: 400px;
-    height: 400px;
-    object-fit: contain;
+    width: 20%;
+    top: -20%;
     transition: all 0.1s ease;
 }
 .expanded {
-    width: 800px !important;
-    height: 800px !important;
+    width: 100%;
+    height: 100%;
 }
 .player2 {
-    width: 200px;
-    height: 200px;
+    width: 20%;
+    height: 100%;
     object-fit: contain;
     transition: all 0.1s ease;
-    border-radius: 10px;
+    border-radius: 6%;
 }
 .ui_self, .ui_enemy {
     position: absolute;
-    top: 0;
+    top: 1%;
     width: 50%;
-    height: 80px;
+    height: 10%;
+    overflow: hidden;
 }
 .ui_self {
-    left: 10px;
+    left: 2%;
     justify-content: left;
     text-align: left;
 }
 .ui_enemy {
-    right: 10px;
+    right: 2%;
     justify-content: right;
     text-align: right;
 }
-.heart {
-    width: 20px;
-    height: 20px;
-}
 .names {
-    font-family: 'Playfair Display', serif;
-    font-size: 40px;
+    font-size: calc(5 * var(--min-unit));
     color: #000;
     text-shadow:
     -1px -1px 0 rgb(150, 150, 150),
@@ -141,57 +148,47 @@ img {
     -1px 1px 0 rgb(180, 180, 180),
     1px 1px 0 rgb(180, 180, 180);
 }
+.heart {
+    width: 4%;
+    height: 4%;
+    margin: 0.3%;
+}
 .hidden {
     display: none;
-}
-.startScreen, .endScreen {
-    position: relative;
-    width: 800px;
-    height: 800px;
-    flex-direction: column;
-    overflow: hidden;
-}
-.startScreen {
-    background: url('data/start_menu.png') center/cover;
-}
-.endScreen {
-    background: url('data/end_credits.png') center/cover;
 }
 .start_ui {
     position: absolute;
     top: 10%;
     right: 50%;
-    width: 60%;
+    width: 100%;
     height: 80%;
     transform: translateX(50%);
     justify-content: center;
     text-align: left;
 }
 .menu_text {
-    font-family: 'Playfair Display', serif;
     position: absolute;
-    top: 10%;
-    right: 50%;
+    top: 5%;
+    left: 10%;
     color: hsl(30, 100%, 29%);
     text-shadow:
     -1px -1px 0 #6d3701,
     1px -1px 0 #6d3701,
     -1px 1px 0 #6d3701,
     1px 1px 0 #6d3701;
-    font-size: 50px;
-    transform: translateX(50%);
+    font-size: calc(11 * var(--min-unit));
 }
 #player1, #player2 {
     display: inline-block;
-    transition: transform 1.1s ease;
+    transition: transform 1.2s ease;
 }
 .style_button {
     position: absolute;
     background-color: #964B00;
     color: white;
-    border-radius: 10px;
-    padding: 15px 30px;
-    font-size: 60px;
+    border-radius: 6%;
+    padding: 1.5% 2.5%;
+    font-size: calc(6 * var(--min-unit));
     transform: translateX(50%);
 }
 .menu_button {
@@ -207,7 +204,7 @@ img {
 .players {
     position: relative;
     top: 35%;
-    left: 10%;
+    left: 20%;
 }
 .end_text {
     position: absolute;
@@ -230,8 +227,8 @@ img {
     z-index: 9999;
 }
 .spinner {
-    width: 50px;
-    height: 50px;
+    width: 6%;
+    height: 6%;
     border: 6px solid rgba(255, 255, 255, 0.3);
     border-top: 6px solid white;
     border-radius: 50%;

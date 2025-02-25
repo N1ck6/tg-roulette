@@ -1,4 +1,7 @@
 let isChanging = false;
+function playAudioOnce(audioId) {
+    document.getElementById(audioId).play();
+}
 function shoot(newSrc, person) {
     if (isChanging) return;
     isChanging = true;
@@ -7,29 +10,48 @@ function shoot(newSrc, person) {
     let imgContainer = document.getElementById('imageContainer');
     let avatar = document.getElementById('player');
     img.src = newSrc;
-    if (person == 'self') {
-        timer = 2600;
-        setTimeout(() => {
-            imgContainer.classList.add('expanded');
-            img.classList.add('expanded');
-            take_heart('self', document.getElementById('player2').textContent);
-        }, 2200);}
+    let patron_type = Math.random() >= 0.5;
+    patron_type = true;
+    if (person == 'self') {;
+        if (patron_type) {
+            timer = 2600;
+            setTimeout(() => {
+                playAudioOnce('self')
+                imgContainer.classList.add('expanded');
+                img.classList.add('expanded');
+                take_heart('self', document.getElementById('player2').textContent);
+            }, 2200);}
+        else {
+            playAudioOnce('blank')
+            timer = 200;
+        }
+    }
     else {
+        if (patron_type) {
         timer = 950;
+        playAudioOnce('other')
         setTimeout(() => {
             wound.classList.toggle("hidden")
-            avatar.style.marginTop = "130px";
+            avatar.style.marginBottom = "6%";
             setTimeout(() => {
                 wound.classList.toggle("hidden");
             }, 300);
             setTimeout(() => {
-                avatar.style.marginTop = "180px";
+                avatar.style.marginBottom = "0";
             }, 200);
-        take_heart('enemy', document.getElementById('player1').textContent);
+            take_heart('enemy', document.getElementById('player1').textContent);
         }, 250);}
+        else {
+            playAudioOnce('blank')
+            timer = 200;
+        }
+    }
     setTimeout(() => {
-        img.src = 'data/still.png';
+        playAudioOnce('reload')
+        setTimeout(() => {
         isChanging = false;
+        }, 450);
+        img.src = 'data/still.png';
         imgContainer.classList.remove('expanded');
         img.classList.remove('expanded');
     }, timer);}
@@ -64,6 +86,7 @@ function take_heart(sub_name, person) {
     check_death(sub_name, person);
 }
 function show_credits(person) {
+    playAudioOnce('game_over')
     clearInterval(light_flicking);
     document.getElementById('game').classList.add('hidden');
     document.getElementById('end_screen').classList.remove('hidden');
@@ -92,6 +115,7 @@ function updateDots() {
     }
 }
 function get_started(nickname) {
+    playAudioOnce('button');
     if (!loading_words[0]) {
         loading1.textContent = nickname;
         loading_words[0] = true;
@@ -99,10 +123,12 @@ function get_started(nickname) {
         loading2.textContent = nickname;
         loading_words[1] = true;
         clearInterval(intervalId1);
-        document.getElementById('loading_names').innerHTML=`GO! GO! GO!<br><span id="player1">${loading1.textContent}</span> vs <span id="player2">${loading2.textContent}</span>`;
-        document.getElementById('loading_names').style.left = '25%';
+        document.getElementById('loading_names').innerHTML=`GO! GO! GO!<br><span id="player1">${loading1.textContent}</span> vs <span id="player2">${loading2.textContent}`;
+        document.getElementById('loading_names').style.left = '35%';
+        document.getElementById('menu_button').disabled = true;
         light_flicking = setInterval(lights_off, 6000);
-        setTimeout(() => names_go(), 800);
+        playAudioOnce('countdown')
+        setTimeout(() => names_go(), 2400);
 }
 }
 function start_game(own_name, other_name) {
@@ -115,13 +141,14 @@ function start_game(own_name, other_name) {
 function names_go() {
     const player1 = document.getElementById('player1');
     const player2 = document.getElementById('player2');
-    player1.style.transform = 'translate(20px, 150px)';
-    player2.style.transform = 'translate(-20px, 150px)';
+    player1.style.transform = 'translate(80%, 260%)';
+    player2.style.transform = 'translate(-80%, 260%)';
     setTimeout(() => {
-        player1.style.transform = 'translate(800px, 150px)';
-        player2.style.transform = 'translate(800px, 150px)';
-        document.getElementById('menu_button').style.transform = 'translate(800px, 0)';
-        setTimeout(() => {start_game(loading1.textContent, loading2.textContent);}, 1000)
+        playAudioOnce('vzuh');
+        player1.style.transform = 'translate(680%, 260%)';
+        player2.style.transform = 'translate(620%, 260%)';
+        document.getElementById('menu_button').style.transform = 'translate(360%, 0)';
+        setTimeout(() => {start_game(loading1.textContent, loading2.textContent);}, 1000);
     }, 1600);
 };
 function restart() {
@@ -141,7 +168,7 @@ function load_data() {
         'data/self.gif',
         'data/start_menu.png',
         'data/still.png',
-        'data/wound.gif'];
+        'data/wound.gif']; // Add audio files
     loadingTimeout = setTimeout(() => {
         let loadingScreen = document.createElement("div");
         loadingScreen.id = "loadingScreen";
@@ -160,7 +187,7 @@ function load_data() {
     }
     window.onload = function () {
         clearTimeout(loadingTimeout);
-        document.getElementById('start_screen').classList.remove('hidden');
+        // document.getElementById('start_screen').classList.remove('hidden');
         let loadingScreen = document.getElementById("loadingScreen");
         if (loadingScreen) {
             loadingScreen.remove();
