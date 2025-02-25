@@ -211,6 +211,13 @@ img {
     top: 45%;
     left: 35%;
 }
+.end_logo {
+    position: absolute;
+    font-size: calc(8 * var(--min-unit));
+    color: #ffca18;
+    top: 12%;
+    left: 27%;
+}
 .loadingScreen {
     position: fixed;
     top: 0;

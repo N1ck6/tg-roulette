@@ -90,7 +90,7 @@ function show_credits(person) {
     clearInterval(light_flicking);
     document.getElementById('game').classList.add('hidden');
     document.getElementById('end_screen').classList.remove('hidden');
-    document.getElementById('end_winner').textContent = person;
+    document.getElementById('end_winner').textContent += person;
 }
 function check_death(sub_name, person) {
     if (!document.getElementById(sub_name + "_heart"))
