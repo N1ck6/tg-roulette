@@ -226,7 +226,7 @@ function load_data() {
         'data/background.png',
         'data/dark.png',
         'data/end_credits.png',
-        'data/GGs.png',
+        'data/ggs.png',
         'data/hp.png',
         'data/light.png',
         'data/opponent.jpg',
