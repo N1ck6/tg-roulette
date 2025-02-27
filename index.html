@@ -13,7 +13,7 @@
         </div>
         <div class="menu" id="settings-menu">
             <button class="close-btn" onclick="toggleMenu()">X</button>
-            <p><strong>Rules:</strong><br>
+            <p class="info_text"><strong>Rules:</strong><br>
                 Each round, the shotgun is loaded with a random mix of live and blank shells. Players take turns choosing to shoot themselves or the enemy. A live shell results in losing one heart, a blank shell allows you to gain another turn if shot at yourself. The objective is to deplete the enemy's hearts before losing all of yours.
             </p>
         </div>
@@ -36,10 +36,9 @@
             <img src="data/light.png" class="light" id="light">
             <img src="data/dark.png" class="dark" id="dark">
         </div>
+        <div id="box" class="box"></div>
         <div class="bottom" onclick="shoot('data/self.gif', 'self')">
-            <div class="right" id="imageContainer">
-                <img id="image" src="data/still.png">
-            </div>
+            <img class="image" id="image" src="data/still.png">
         </div>
         <div class="UI" id="UI">
             <div class="ui_self" id="ui_self">
@@ -74,6 +73,7 @@
     <audio id="countdown" src="data/sounds/countdown.ogg"></audio>
     <audio id="put" src="data/sounds/put.ogg"></audio>
     <audio id="vzuh" src="data/sounds/vzuh.ogg"></audio>
+    <audio id="shake" src="data/sounds/shake.ogg"></audio>
     <script src="script.js"></script>
 </body>
 </html>

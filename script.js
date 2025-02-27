@@ -1,4 +1,6 @@
 let isChanging = false;
+let F;
+let List;
 function playAudioOnce(audioId) {
     document.getElementById(audioId).play();
 }
@@ -10,17 +12,14 @@ function shoot(newSrc, person) {
     isChanging = true;
     let img = document.getElementById('image');
     let wound = document.getElementById('wound');
-    let imgContainer = document.getElementById('imageContainer');
     let avatar = document.getElementById('player');
     img.src = newSrc;
-    let patron_type = Math.random() >= 0.5;
-    patron_type = true;
+    let patron_type = List.shift();
     if (person == 'self') {;
         if (patron_type) {
             timer = 2600;
             setTimeout(() => {
                 playAudioOnce('self')
-                imgContainer.classList.add('expanded');
                 img.classList.add('expanded');
                 take_heart('self', document.getElementById('player2').textContent);
             }, 2200);}
@@ -49,15 +48,18 @@ function shoot(newSrc, person) {
             timer = 200;
         }
     }
-    setTimeout(() => {
-        playAudioOnce('reload')
         setTimeout(() => {
-        isChanging = false;
-        }, 450);
-        img.src = 'data/still.png';
-        imgContainer.classList.remove('expanded');
-        img.classList.remove('expanded');
+            if (document.getElementById("enemy_heart") && document.getElementById("self_heart"))
+                playAudioOnce('reload');
+            setTimeout(() => {
+                isChanging = false;
+            }, 450);
+            img.src = 'data/still.png';
+            img.classList.remove('expanded');
+            if (List.length <= 0)
+                startAnimation();
     }, timer);}
+    
 function blink(light, dark) {
     dark.style.display = 'block';
     light.style.display = 'none';
@@ -187,17 +189,18 @@ function start_game(own_name, other_name) {
     document.getElementById('enemy_name').textContent = other_name;
     document.getElementById('start_screen').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
+    startAnimation();
 }
 function names_go() {
     const player1 = document.getElementById('player1');
     const player2 = document.getElementById('player2');
-    player1.style.transform = 'translate(80%, 300%)';
-    player2.style.transform = 'translate(-80%, 300%)';
+    player1.style.transform = 'translate(80%, 350%)';
+    player2.style.transform = 'translate(-80%, 350%)';
     setTimeout(() => {
         playAudioOnce('vzuh');
-        player1.style.transform = 'translate(780%, 300%)';
-        player2.style.transform = 'translate(760%, 300%)';
-        document.getElementById('menu_button').style.transform = 'translate(400%, 0)';
+        player1.style.transform = 'translate(2000px, 350%)';
+        player2.style.transform = 'translate(2000px, 350%)';
+        document.getElementById('menu_button').style.transform = 'translate(1800px, 0)';
         setTimeout(() => {start_game(loading1.textContent, loading2.textContent);}, 1000);
     }, 1600);
 };
@@ -237,7 +240,7 @@ function load_data() {
     }
     window.onload = function () {
         clearTimeout(loadingTimeout);
-        document.getElementById('start_screen').classList.remove('hidden');
+        // document.getElementById('start_screen').classList.remove('hidden');
         let loadingScreen = document.getElementById("loadingScreen");
         if (loadingScreen) {
             loadingScreen.remove();
@@ -259,4 +262,80 @@ function toggleMenu() {
         overlay.style.display = "block";
         gear.style.transform = "rotate(180deg)";
     }
+}
+function createShuffledList() {
+    let c = Math.floor(Math.random() * 4) + 2;
+    let list = Array(8).fill(false);
+    for (let i = 0; i < c; i++) {
+        list[i] = true;}
+    return list;
+}
+function renderElements(list) {
+    const box = document.getElementById('box');
+    box.style.opacity = "1";
+    list.forEach(value => {
+        const element = document.createElement('div');
+        element.classList.add('element');
+        element.id = "bullet"
+        const top = document.createElement('div');
+        top.classList.add('top');
+        const bottom = document.createElement('div');
+        bottom.classList.add(value ? 'bottom-true' : 'bottom-false');
+        element.appendChild(top);
+        element.appendChild(bottom);
+        box.appendChild(element);
+    });
+}
+function startAnimation() {
+    isChanging = true;
+    List = createShuffledList();
+    renderElements(List);
+    List.sort(() => Math.random() - 0.5);
+    image = document.getElementById('image');
+    image.animate([
+        { transform: 'translate(0, 0) rotate(0deg)' },
+        { transform: 'translate(100%, -50%) rotate(60deg)' }
+    ], { duration: 800, easing: 'ease-in-out' }).onfinish = () => {
+        image.classList.add('reloading')
+        box.animate([
+            { transform: 'translate(-50%, -50%) rotate(0deg)' },
+            { transform: 'translate(50%, -50%) rotate(60deg)' }
+        ], { duration: 2000, easing: 'ease-in-out' }).onfinish = () => {
+            document.querySelectorAll('#bullet').forEach(el => el.remove());
+            playAudioOnce('shake');
+            box.animate([
+                { transform: 'translate(50%, -50%) rotate(360deg)' },
+                { transform: 'translate(60%, -50%) rotate(400deg)' },
+                { transform: 'translate(50%, -50%) rotate(440deg)' },
+                { transform: 'translate(50%, -50%) rotate(360deg)' }
+            ], { duration: 300, iterations: 3, easing: 'ease-in-out' }).onfinish = () => {
+                box.animate([
+                    { transform: 'translate(50%, -50%) rotate(360deg)' },
+                    { transform: 'translate(-100%, -50%) rotate(-0deg)', scale: 0.2, opacity:0 }
+                ], { duration: 1200, easing: 'ease-in-out' }).onfinish = () => {
+                    box.style.opacity = '0';
+                };
+                image.animate([
+                    { transform: 'translate(-100%, -50%) rotate(-90deg)' },
+                    { transform: 'translate(200%, -50%) rotate(0deg)' }
+                ], { duration: 1000, easing: 'ease-in-out' }).onfinish = () => {
+                    image.style.transform = 'translate(100%, -50%) scale(1.1)';
+                    image.animate([
+                        { transform: 'translate(200%, -50%) rotate(360deg)' },
+                        { transform: 'translate(-130%, -100%) rotate(-360deg)'}
+                    ], { duration: 1000, easing: 'ease-in-out' }).onfinish = () => {
+                    image.classList.remove('reloading')
+                    setTimeout(() => {
+                        image.style = "";
+                        image.animate([
+                            { transform: 'translate(100%, -50%) rotate(60deg)' },
+                            { transform: 'translate(0, 0) rotate(0deg)' }
+                        ], { duration: 800, easing: 'ease-in-out' })
+                        isChanging = false;
+                    }, 1000);
+                    };
+                };
+            };
+        };
+    };
 }

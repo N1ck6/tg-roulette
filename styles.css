@@ -10,12 +10,11 @@
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    font-family: '', cursive;
+    font-family: 'Mediator',Arial,sans-serif;
 }
 html {
     height: 100%;
 }
-
 body {
     width: 100vmin;
     height: 100vmin;
@@ -57,32 +56,26 @@ img {
 }
 .top, .bottom {
     position: relative;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     height: 50%;
 }
-.right, .avatar {
+.image {
+    position: absolute;
+    flex: 1;
+    right: 0;
+    width: 50%;
+    object-fit: contain;
+}
+.avatar {
+    position: relative;
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     transition: all 0.1s ease;
-}
-.right {
-    position: absolute;
-    width: 50%;
-    height: 100%;
-    right: 0;
-}
-.right img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: all 0.1s ease;
-}
-.avatar {
-    position: relative;
     width: 40%;
     height: 40%;
 }
@@ -113,8 +106,8 @@ img {
     transition: all 0.1s ease;
 }
 .expanded {
-    width: 100%;
-    height: 100%;
+    width: 100vmin;
+    height: 100vmin;
 }
 .player2 {
     width: 20%;
@@ -286,12 +279,12 @@ img {
 }
 .menu {
     position: absolute;
-    font-size: calc(2.5 * var(--min-unit));
-    top: 40%;
+    font-size: calc(4 * var(--min-unit));
+    top: 20%;
     left: 50%;
     transform: translateX(-50%);
-    width: 50%;
-    height: 40%;
+    width: 70%;
+    height: 60%;
     padding: 2%;
     background-color: #EDC9AF;
     border: 2px solid #C2A080;
@@ -315,4 +308,52 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.info_text {
+    margin-top: 10%;
+}
+.reloading {
+    position: absolute;
+    top: 0;
+    width: 30%;
+    left: -30%;
+    transition: transform 0.5s ease, scale 0.2s ease-in-out;
+}
+.box {
+    position: absolute;
+    display: flex;
+    gap: 2%;
+    padding: 2%;
+    width: 16%;
+    height: 6%;
+    background-color: lightgray;
+    border-radius: 8%;
+    transition: transform 0.2s ease-in-out;
+    justify-content: center;
+    overflow: hidden;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+}
+.element {
+    width: 12%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10%;
+    overflow: hidden;
+}
+.bullet_top {
+    height: 30%;
+    background-color: darkgray;
+}
+.bottom-true {
+    height: 70%;
+    background-color: red;
+}
+.bottom-false {
+    height: 70%;
+    background-color: gray;
 }
