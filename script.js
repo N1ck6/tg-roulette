@@ -13,10 +13,10 @@ function shoot(newSrc, person) {
     let img = document.getElementById('image');
     let wound = document.getElementById('wound');
     let avatar = document.getElementById('player');
-    img.src = newSrc;
     let patron_type = List.shift();
     if (person == 'self') {;
         if (patron_type) {
+            img.src = newSrc;
             timer = 2600;
             setTimeout(() => {
                 playAudioOnce('self')
@@ -30,6 +30,7 @@ function shoot(newSrc, person) {
     }
     else {
         if (patron_type) {
+        img.src = newSrc;
         timer = 950;
         playAudioOnce('other')
         setTimeout(() => {
@@ -221,7 +222,9 @@ function load_data() {
         'data/self.gif',
         'data/start_menu.png',
         'data/still.png',
-        'data/wound.gif']; // Add audio files, gear.svg
+        'data/wound.gif',
+        'data/self_blank.gif',
+        'data/gear.svg']; // Add audio files
     loadingTimeout = setTimeout(() => {
         let loadingScreen = document.createElement("div");
         loadingScreen.id = "loadingScreen";
