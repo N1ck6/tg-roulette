@@ -236,7 +236,19 @@ function load_data() {
         'data/still.png',
         'data/wound.gif',
         'data/self_blank.gif',
-        'data/gear.svg']; // Add audio files
+        'data/gear.svg']
+    var sounds = [
+        'data/sounds/blank.ogg',
+        'data/sounds/button.ogg',
+        'data/sounds/countdown.ogg',
+        'data/sounds/game_over.ogg',
+        'data/sounds/other.ogg',
+        'data/sounds/put.ogg',
+        'data/sounds/reload.ogg',
+        'data/sounds/self.ogg',
+        'data/sounds/shake.ogg',
+        'data/sounds/vzuh.ogg'
+    ];
     loadingTimeout = setTimeout(() => {
         let loadingScreen = document.createElement("div");
         loadingScreen.id = "loadingScreen";
@@ -248,19 +260,27 @@ function load_data() {
         document.body.prepend(loadingScreen);
     }, 500);
     var loadedImages = [];
-    for(var i in images) {
+    var loadedAudio = [];
+    for (var i in images) {
         var img = new Image();
         img.src = images[i];
         loadedImages.push(img);
     }
+    for (var j in sounds) {
+        var audio = new Audio();
+        audio.src = sounds[j];
+        loadedAudio.push(audio);
+    }
+    
     window.onload = function () {
         clearTimeout(loadingTimeout);
-        // document.getElementById('start_screen').classList.remove('hidden');
+        document.getElementById('start_screen').classList.remove('hidden');
         let loadingScreen = document.getElementById("loadingScreen");
         if (loadingScreen) {
             loadingScreen.remove();
         }
         loadedImages = null;
+        loadedAudio = null;
     };
 }
 load_data();
