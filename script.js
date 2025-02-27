@@ -1,6 +1,4 @@
-let isChanging = false;
-let F;
-let List;
+let List, isChanging = false, self_hp = 4, enemy_hp = 4;
 function playAudioOnce(audioId) {
     document.getElementById(audioId).play();
 }
@@ -24,8 +22,12 @@ function shoot(newSrc, person) {
                 take_heart('self', document.getElementById('player2').textContent);
             }, 2200);}
         else {
-            playAudioOnce('blank')
-            timer = 200;
+            newSrc = "data/self_blank.gif"
+            img.src = newSrc;
+            setTimeout(() => {
+                playAudioOnce('blank')
+            }, 2300);
+            timer = 2700;
         }
     }
     else {
@@ -45,8 +47,13 @@ function shoot(newSrc, person) {
             take_heart('enemy', document.getElementById('player1').textContent);
         }, 250);}
         else {
+            img.style.transform = `translateY(5%)`;
+            
+            setTimeout(() => {
+                img.style.transform = '';
+            }, 300);
             playAudioOnce('blank')
-            timer = 200;
+            timer = 600;
         }
     }
         setTimeout(() => {
@@ -89,7 +96,11 @@ let light_flicking;
 function take_heart(sub_name, person) {
     if (document.getElementById(sub_name + "_heart"))
         document.getElementById(sub_name + "_heart").remove();
-    check_death(sub_name, person);
+    if (sub_name == 'self') 
+        self_hp -= 1;
+    else 
+        enemy_hp -= 1;
+    check_death(person);
 }
 function show_credits(person) {
     playAudioOnce('game_over')
@@ -98,8 +109,8 @@ function show_credits(person) {
     document.getElementById('end_screen').classList.remove('hidden');
     document.getElementById('end_winner').textContent += person;
 }
-function check_death(sub_name, person) {
-    if (!document.getElementById(sub_name + "_heart"))
+function check_death(person) {
+    if (!self_hp || !enemy_hp)
         show_credits(person);
 }
 let loading1 = document.getElementById('player1');
@@ -181,7 +192,8 @@ function get_started(nickname) {
         document.getElementById('loading_names').style.left = '35%';
         document.getElementById('menu_button').disabled = true;
         light_flicking = setInterval(lights_off, 6000);
-        playAudioOnce('countdown')
+        setTimeout(() => playAudioOnce('countdown'), 400);
+        
         setTimeout(() => names_go(), 2400);
 }
 }
@@ -310,8 +322,12 @@ function startAnimation() {
                 { transform: 'translate(50%, -50%) rotate(360deg)' },
                 { transform: 'translate(60%, -50%) rotate(400deg)' },
                 { transform: 'translate(50%, -50%) rotate(440deg)' },
+                { transform: 'translate(50%, -50%) rotate(400deg)' },
                 { transform: 'translate(50%, -50%) rotate(360deg)' }
             ], { duration: 300, iterations: 3, easing: 'ease-in-out' }).onfinish = () => {
+                setTimeout(() => {
+                    playAudioOnce('put');
+                }, 800);
                 box.animate([
                     { transform: 'translate(50%, -50%) rotate(360deg)' },
                     { transform: 'translate(-100%, -50%) rotate(-0deg)', scale: 0.2, opacity:0 }
@@ -326,16 +342,16 @@ function startAnimation() {
                     image.animate([
                         { transform: 'translate(200%, -50%) rotate(360deg)' },
                         { transform: 'translate(-130%, -100%) rotate(-360deg)'}
-                    ], { duration: 1000, easing: 'ease-in-out' }).onfinish = () => {
+                    ], { duration: 800, easing: 'ease-in-out' }).onfinish = () => {
                     image.classList.remove('reloading')
                     setTimeout(() => {
                         image.style = "";
                         image.animate([
                             { transform: 'translate(100%, -50%) rotate(60deg)' },
                             { transform: 'translate(0, 0) rotate(0deg)' }
-                        ], { duration: 800, easing: 'ease-in-out' })
+                        ], { duration: 400, easing: 'ease-in-out' })
                         isChanging = false;
-                    }, 1000);
+                    }, 400);
                     };
                 };
             };
