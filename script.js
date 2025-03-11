@@ -1,59 +1,108 @@
-let List, isChanging = false, self_hp = 4, enemy_hp = 4;
+let List, isChanging = false, self_hp = 4, enemy_hp = 4, live = 0, blank = 0, holder = 'self';
 function playAudioOnce(audioId) {
     document.getElementById(audioId).play();
 }
 function getRandomFloat(min, max) {
     return Math.random() * (max - min) + min;
 }
-function shoot(newSrc, person) {
+function shoot(newSrc='', person) {
     if (isChanging) return;
     isChanging = true;
     let img = document.getElementById('image');
     let wound = document.getElementById('wound');
     let avatar = document.getElementById('player');
     let patron_type = List.shift();
-    if (person == 'self') {;
-        if (patron_type) {
-            img.src = newSrc;
-            timer = 2600;
-            setTimeout(() => {
-                playAudioOnce('self')
-                img.classList.add('expanded');
-                take_heart('self', document.getElementById('player2').textContent);
-            }, 2200);}
+    if (holder == 'self') {
+        if (person == 'self') {;
+            if (patron_type) {
+                img.src = newSrc;
+                timer = 2600;
+                setTimeout(() => {
+                    playAudioOnce('self')
+                    img.classList.add('expanded');
+                    take_heart('self', document.getElementById('player2').textContent);
+                }, 2200);}
+            else {
+                newSrc = "data/self_blank.gif"
+                img.src = newSrc;
+                setTimeout(() => {
+                    playAudioOnce('blank')
+                }, 2300);
+                timer = 2700;
+            }
+        }
         else {
-            newSrc = "data/self_blank.gif"
+            if (patron_type) {
             img.src = newSrc;
+            timer = 950;
+            playAudioOnce('other')
             setTimeout(() => {
+                wound.classList.toggle("hidden")
+                avatar.style.marginBottom = "6%";
+                setTimeout(() => {
+                    wound.classList.toggle("hidden");
+                }, 300);
+                setTimeout(() => {
+                    avatar.style.marginBottom = "0";
+                }, 200);
+                take_heart('enemy', document.getElementById('player1').textContent);
+            }, 250);}
+            else {
+                img.style.transform = `translateY(5%)`;
+                
+                setTimeout(() => {
+                    img.style.transform = '';
+                }, 300);
                 playAudioOnce('blank')
-            }, 2300);
-            timer = 2700;
+                timer = 600;
+            }
         }
     }
     else {
-        if (patron_type) {
-        img.src = newSrc;
-        timer = 950;
-        playAudioOnce('other')
-        setTimeout(() => {
-            wound.classList.toggle("hidden")
-            avatar.style.marginBottom = "6%";
-            setTimeout(() => {
-                wound.classList.toggle("hidden");
-            }, 300);
-            setTimeout(() => {
-                avatar.style.marginBottom = "0";
-            }, 200);
-            take_heart('enemy', document.getElementById('player1').textContent);
-        }, 250);}
+        if (person == 'self') {;
+            if (patron_type) {
+                img.src = newSrc;
+                timer = 2600;
+                setTimeout(() => {
+                    playAudioOnce('self')
+                    img.classList.add('expanded');
+                    take_heart('self', document.getElementById('player1').textContent);
+                }, 2200);}
+            else {
+                newSrc = "data/self_blank.gif"
+                img.src = newSrc;
+                setTimeout(() => {
+                    playAudioOnce('blank')
+                }, 2300);
+                timer = 2700;
+            }
+        }
         else {
-            img.style.transform = `translateY(5%)`;
-            
+            if (patron_type) {
+            img.src = 'data/enemy_self.gif';
+            timer = 2450;
+            playAudioOnce('other')
             setTimeout(() => {
-                img.style.transform = '';
-            }, 300);
-            playAudioOnce('blank')
-            timer = 600;
+                wound.classList.toggle("hidden")
+                avatar.style.marginBottom = "6%";
+                setTimeout(() => {
+                    wound.classList.toggle("hidden");
+                }, 300);
+                setTimeout(() => {
+                    avatar.style.marginBottom = "0";
+                }, 200);
+                take_heart('enemy', document.getElementById('player2').textContent);
+            }, 250);}
+            else {
+                'data/enemy_self.gif'
+                img.style.transform = `translateY(5%)`;
+                
+                setTimeout(() => {
+                    img.style.transform = '';
+                }, 300);
+                playAudioOnce('blank')
+                timer = 600;
+            }
         }
     }
         setTimeout(() => {
@@ -62,11 +111,15 @@ function shoot(newSrc, person) {
             setTimeout(() => {
                 isChanging = false;
             }, 450);
-            img.src = 'data/still.png';
+            if (holder == 'self')
+                img.src = 'data/still.png';
+            else
+                img.src = 'data/enemy_still.png';
             img.classList.remove('expanded');
             if (List.length <= 0)
                 startAnimation();
-    }, timer);}
+    }, timer);
+    changeHolder();}
     
 function blink(light, dark) {
     dark.style.display = 'block';
@@ -211,9 +264,9 @@ function names_go() {
     player2.style.transform = 'translate(-80%, 350%)';
     setTimeout(() => {
         playAudioOnce('vzuh');
-        player1.style.transform = 'translate(2000px, 350%)';
-        player2.style.transform = 'translate(2000px, 350%)';
-        document.getElementById('menu_button').style.transform = 'translate(1800px, 0)';
+        player1.setAttribute("hidden", "hidden");
+        player2.setAttribute("hidden", "hidden");
+        document.getElementById('menu_button').style.transform = 'translate(500%, 0)';
         setTimeout(() => {start_game(loading1.textContent, loading2.textContent);}, 1000);
     }, 1600);
 };
@@ -274,7 +327,7 @@ function load_data() {
     
     window.onload = function () {
         clearTimeout(loadingTimeout);
-        document.getElementById('start_screen').classList.remove('hidden');
+        // document.getElementById('start_screen').classList.remove('hidden');
         let loadingScreen = document.getElementById("loadingScreen");
         if (loadingScreen) {
             loadingScreen.remove();
@@ -300,6 +353,8 @@ function toggleMenu() {
 }
 function createShuffledList() {
     let c = Math.floor(Math.random() * 4) + 2;
+    live = c;
+    blank = 8 - c;
     let list = Array(8).fill(false);
     for (let i = 0; i < c; i++) {
         list[i] = true;}
@@ -355,13 +410,13 @@ function startAnimation() {
                     box.style.opacity = '0';
                 };
                 image.animate([
-                    { transform: 'translate(-100%, -50%) rotate(-90deg)' },
-                    { transform: 'translate(200%, -50%) rotate(0deg)' }
+                    { transform: 'translate(-100%, 110%) rotate(-90deg)' },
+                    { transform: 'translate(200%, 110%) rotate(0deg)' }
                 ], { duration: 1000, easing: 'ease-in-out' }).onfinish = () => {
                     image.style.transform = 'translate(100%, -50%) scale(1.1)';
                     image.animate([
-                        { transform: 'translate(200%, -50%) rotate(360deg)' },
-                        { transform: 'translate(-130%, -100%) rotate(-360deg)'}
+                        { transform: 'translate(200%, 110%) rotate(360deg)' },
+                        { transform: 'translate(-130%, 110%) rotate(-360deg)'}
                     ], { duration: 800, easing: 'ease-in-out' }).onfinish = () => {
                     image.classList.remove('reloading')
                     setTimeout(() => {
@@ -377,4 +432,34 @@ function startAnimation() {
             };
         };
     };
+}
+function chooseTarget() {
+    if (live == 0 || (live > blank && self_hp != 1 && enemy_hp != 1))
+        return 'enemy'
+    else
+        return 'self'
+}
+function changeHolder() {
+    isChanging = true;
+    image = document.getElementById('image');
+    if (holder == 'self'){
+        image.animate([
+            { transform: 'translate(0, 0)' },
+            { transform: 'translate(-220%, -170%)', scale: 0.4}
+        ], { duration: 1200, easing: 'ease-in-out' }).onfinish = () => {
+            image.src = 'data/enemy_still.png';
+            image.style = '';
+            image.classList.remove('selfPosition')
+            image.classList.add('enemyPosition')
+            holder = 'enemy'
+        };
+        // setTimeout(() => shoot(chooseTarget()), 800);
+    }
+    else {
+        image.src = 'data/still.png';
+        image.classList.remove('enemyPosition')
+        image.classList.add('selfPosition')
+        holder = 'self';
+    }
+    setTimeout(() => isChanging = false, 800);
 }
