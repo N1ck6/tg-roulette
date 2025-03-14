@@ -65,14 +65,12 @@ img {
 .image {
     position: absolute;
     object-fit: contain;
-    transition: all 0.2s ease-in-out;
-}
-.selfPosition {
     top: 50%;
     right: 0;
     width: 50%;
+    transition: all 1200ms ease-in-out;
 }
-.enemyPosition {
+.image.changed {
     top: 40%;
     right: 55%;
     width: 20%;

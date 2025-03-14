@@ -81,18 +81,20 @@ function shoot(newSrc='', person) {
             if (patron_type) {
             img.src = 'data/enemy_self.gif';
             timer = 2450;
-            playAudioOnce('other')
             setTimeout(() => {
-                wound.classList.toggle("hidden")
-                avatar.style.marginBottom = "6%";
+                playAudioOnce('other')
                 setTimeout(() => {
-                    wound.classList.toggle("hidden");
-                }, 300);
-                setTimeout(() => {
-                    avatar.style.marginBottom = "0";
+                    wound.classList.toggle("hidden")
+                    avatar.style.marginBottom = "6%";
+                    setTimeout(() => {
+                        wound.classList.toggle("hidden");
+                    }, 300);
+                    setTimeout(() => {
+                        avatar.style.marginBottom = "0";
+                    }, 200);
+                    take_heart('enemy', document.getElementById('player2').textContent);
                 }, 200);
-                take_heart('enemy', document.getElementById('player2').textContent);
-            }, 250);}
+            }, 2000);}
             else {
                 'data/enemy_self.gif'
                 img.style.transform = `translateY(5%)`;
@@ -119,7 +121,7 @@ function shoot(newSrc='', person) {
             if (List.length <= 0)
                 startAnimation();
     }, timer);
-    changeHolder();}
+    setTimeout(() => changeHolder(), timer+300);}
     
 function blink(light, dark) {
     dark.style.display = 'block';
@@ -241,12 +243,16 @@ function get_started(nickname) {
         loading2.textContent = nickname;
         loading_words[1] = true;
         clearInterval(intervalId1);
-        document.getElementById('loading_names').innerHTML=`GO! GO! GO!<br><span id="player1">${loading1.textContent}</span> vs <span id="player2">${loading2.textContent}`;
-        document.getElementById('loading_names').style.left = '35%';
+        namesDiv = document.getElementById('loading_names')
+        namesDiv.innerHTML = '';
+        namesDiv.appendChild(loading1);
+        namesDiv.appendChild(document.createTextNode(' VS '));
+        namesDiv.appendChild(loading2);
+        namesDiv.style.left = '35%';
+        namesDiv.style.top = '45%';
         document.getElementById('menu_button').disabled = true;
         light_flicking = setInterval(lights_off, 6000);
         setTimeout(() => playAudioOnce('countdown'), 400);
-        
         setTimeout(() => names_go(), 2400);
 }
 }
@@ -264,8 +270,8 @@ function names_go() {
     player2.style.transform = 'translate(-80%, 350%)';
     setTimeout(() => {
         playAudioOnce('vzuh');
-        player1.setAttribute("hidden", "hidden");
-        player2.setAttribute("hidden", "hidden");
+        player1.style.opacity = '0';
+        player2.style.opacity = '0';
         document.getElementById('menu_button').style.transform = 'translate(500%, 0)';
         setTimeout(() => {start_game(loading1.textContent, loading2.textContent);}, 1000);
     }, 1600);
@@ -422,7 +428,7 @@ function startAnimation() {
                     setTimeout(() => {
                         image.style = "";
                         image.animate([
-                            { transform: 'translate(100%, -50%) rotate(60deg)' },
+                            { transform: 'translate(100%, -20%) rotate(80deg)' },
                             { transform: 'translate(0, 0) rotate(0deg)' }
                         ], { duration: 400, easing: 'ease-in-out' })
                         isChanging = false;
@@ -441,25 +447,16 @@ function chooseTarget() {
 }
 function changeHolder() {
     isChanging = true;
-    image = document.getElementById('image');
-    if (holder == 'self'){
-        image.animate([
-            { transform: 'translate(0, 0)' },
-            { transform: 'translate(-220%, -170%)', scale: 0.4}
-        ], { duration: 1200, easing: 'ease-in-out' }).onfinish = () => {
+    var image = document.getElementById('image');
+    image.classList.toggle('changed');
+    setTimeout(() => {
+        if (image.classList.contains('changed')) {
             image.src = 'data/enemy_still.png';
-            image.style = '';
-            image.classList.remove('selfPosition')
-            image.classList.add('enemyPosition')
             holder = 'enemy'
-        };
-        // setTimeout(() => shoot(chooseTarget()), 800);
-    }
-    else {
-        image.src = 'data/still.png';
-        image.classList.remove('enemyPosition')
-        image.classList.add('selfPosition')
-        holder = 'self';
-    }
-    setTimeout(() => isChanging = false, 800);
+            setTimeout(() => shoot(chooseTarget()), 1000);
+        } else {
+            image.src = 'data/still.png';
+            holder = 'self'
+            setTimeout(() => isChanging = false, 1000);}
+    }, 600);
 }
