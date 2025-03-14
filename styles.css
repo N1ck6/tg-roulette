@@ -179,6 +179,10 @@ img {
     1px 1px 0 #6d3701;
     font-size: calc(9 * var(--min-unit));
 }
+.menuChoice {
+    width: 100%;
+    height: 100%;
+}
 #player1, #player2 {
     display: inline-block;
     transition: transform 1.2s ease;
@@ -193,9 +197,13 @@ img {
     transform: translateX(50%);
 }
 .menu_button {
-    bottom: 20%;
+    width: 32%;
+    bottom: 16%;
     right: 50%;
     transition: transform 1s ease;
+}
+.ready {
+    bottom: 30%;
 }
 .restart_button {
     bottom: 10%;
@@ -206,6 +214,7 @@ img {
     position: relative;
     top: 35%;
     left: 30%;
+    width: 60%;
 }
 .end_text {
     position: absolute;
@@ -314,6 +323,7 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: calc(4 * var(--min-unit));
 }
 .info_text {
     margin-top: 10%;

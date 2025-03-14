@@ -20,11 +20,19 @@
             </p>
         </div>
         <div class="start_ui">
-        <span class="menu_text">Tg&nbsp;Roulette</span>
-        <div class="names players" id="loading_names">
-            Player1:&nbsp;<span id="player1">Loading</span><br>
-            Player2:&nbsp;<span id="player2">Loading</span></div>
-        <button class="menu_button style_button" id="menu_button" onclick="get_started('Nicki')">Ready</button>
+            <span class="menu_text">Tg&nbsp;Roulette</span>
+            <div class="menuChoice" id="1p">
+                <button class="menu_button style_button ready" onclick="start_game('Nicki', 'Dealer')">1 Player</button>
+                <button class="menu_button style_button" onclick="show_menu()">2 Players</button>
+            </div>
+
+            <div class="menuChoice hidden" id="2p">
+            <div class="names players" id="loading_names">
+                Player1:&nbsp;<span id="player1">Loading</span><br>
+                Player2:&nbsp;<span id="player2">Loading</span></div>
+            <button class="menu_button style_button ready" id="menu_button" onclick="get_started('Nicki')">Ready</button>
+            <button class="menu_button style_button" id="menu_back_button" onclick="show_menu()">Back</button>
+            </div>
         </div>
     </div>
     <div class="game hidden" id="game">

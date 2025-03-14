@@ -250,7 +250,10 @@ function get_started(nickname) {
         namesDiv.appendChild(loading2);
         namesDiv.style.left = '35%';
         namesDiv.style.top = '45%';
-        document.getElementById('menu_button').disabled = true;
+        menu_b = document.getElementById('menu_button')
+        menu_b.disabled = true;
+        menu_b.classList.toggle('ready');
+        document.getElementById('menu_back_button').classList.toggle('hidden');
         light_flicking = setInterval(lights_off, 6000);
         setTimeout(() => playAudioOnce('countdown'), 400);
         setTimeout(() => names_go(), 2400);
@@ -347,14 +350,16 @@ function toggleMenu() {
     let menu = document.getElementById("settings-menu");
     let gear = document.querySelector(".gear");
     let overlay = document.getElementById("overlay");
-    if (menu.style.display === "block") {
+    if (menu.style.display == "block") {
         menu.style.display = "none";
         overlay.style.display = "none";
         gear.style.transform = "rotate(0deg)";
+        gear.style.disabled = true;
     } else {
         menu.style.display = "block";
         overlay.style.display = "block";
         gear.style.transform = "rotate(180deg)";
+        gear.style.disabled = false;
     }
 }
 function createShuffledList() {
@@ -461,4 +466,8 @@ function changeHolder() {
             setTimeout(() => isChanging = false, 1000);}
         image.style.transition = "";
     }, 600);
+}
+function show_menu() {
+    document.getElementById('1p').classList.toggle('hidden');
+    document.getElementById('2p').classList.toggle('hidden');
 }
