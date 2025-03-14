@@ -68,7 +68,7 @@ img {
     top: 50%;
     right: 0;
     width: 50%;
-    transition: all 1200ms ease-in-out;
+    transition: all 200ms ease-in-out;
 }
 .image.changed {
     top: 40%;
@@ -113,7 +113,7 @@ img {
 }
 .expanded {
     width: 100vmin;
-    height: 100vmin;
+    top: 0;
 }
 .player2 {
     width: 20%;

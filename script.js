@@ -440,14 +440,15 @@ function startAnimation() {
     };
 }
 function chooseTarget() {
-    if (live == 0 || (live > blank && self_hp != 1 && enemy_hp != 1))
-        return 'enemy'
-    else
+    if (live == 0 || (live < blank && (self_hp != 1 && enemy_hp != 1 && live < blank / 2)))
         return 'self'
+    else
+        return 'enemy'
 }
 function changeHolder() {
     isChanging = true;
     var image = document.getElementById('image');
+    image.style.transition = "top 1200ms ease-in-out, right 1200ms ease-in-out, width 1200ms ease-in-out";
     image.classList.toggle('changed');
     setTimeout(() => {
         if (image.classList.contains('changed')) {
@@ -458,5 +459,6 @@ function changeHolder() {
             image.src = 'data/still.png';
             holder = 'self'
             setTimeout(() => isChanging = false, 1000);}
+        image.style.transition = "";
     }, 600);
 }
