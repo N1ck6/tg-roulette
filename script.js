@@ -6,6 +6,7 @@
   const $ = (id) => DOC.getElementById(id);
   const ABORT = Symbol('abort');
   const PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const TG_TIMEOUT = 6000;   // предел ожидания Telegram SDK
 
   const IMG = {
     bg:'data/background.png', dark:'data/dark.png', end:'data/end_credits.png', ggs:'data/ggs.png',
@@ -22,7 +23,7 @@
   const HP_BY_DIFF = { easy:5, normal:4, hard:3 };
   const SHELLS_PER_ROUND = 8;
 
-  /* ===================== РАЗМЕТКА (используется, если чего-то нет в HTML) ===================== */
+  /* ===================== РАЗМЕТКА ===================== */
   const SHELL_HTML = `
   <div class="loadingScreen" id="loading_screen">
     <div class="load_brand">TG<span>ROULETTE</span></div>
@@ -78,19 +79,11 @@
     </div>
     <div class="ui_self"><div class="names" id="own_name">You</div><div class="hearts" id="self_hearts"></div></div>
     <div class="ui_enemy"><div class="names" id="enemy_name">Dealer</div><div class="hearts right" id="enemy_hearts"></div></div>
-    <button class="hit_dealer" id="hit_dealer" type="button" aria-label="Shoot the dealer">
-      <svg class="ret" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M3 16V3h13M84 3h13v13M97 84v13H84M16 97H3V84" fill="none" stroke="currentColor" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-      </svg>
-      <span class="hit_tag">SHOOT DEALER</span>
-    </button>
+    <button class="hit_dealer" id="hit_dealer" type="button" aria-label="Shoot the dealer"></button>
     <div id="box" class="box"></div>
     <div class="bottom"></div>
     <img id="image" class="image" src="data/still.png" alt="">
-    <button class="hit_self" id="hit_self" type="button" aria-label="Shoot yourself">
-      <span class="hit_tag">TAP HERE — SHOOT YOURSELF</span>
-    </button>
-    <div class="turn_strip" id="turn_strip" aria-live="polite"><i class="dot"></i><span id="turn_text">YOUR TURN</span></div>
+    <button class="hit_self" id="hit_self" type="button" aria-label="Shoot yourself"></button>
     <div class="controls" id="controls">
       <button class="action_btn self" id="shoot_self" type="button"><b>SHOOT</b><span>YOU</span></button>
       <button class="action_btn enemy" id="shoot_enemy" type="button"><b>SHOOT</b><span>DEALER</span></button>
@@ -99,7 +92,6 @@
     <div class="hit_flash" id="hit_flash"></div>
     <div class="input_shield on" id="input_shield"></div>
     <div class="lamp" id="lamp" aria-hidden="true">
-      <div class="lamp_beam"></div>
       <img id="light" class="light" src="data/light.png" alt="">
     </div>
     <div class="blackout" id="blackout" aria-hidden="true">
@@ -145,12 +137,11 @@
   const REQUIRED = ['loading_screen','load_fill','load_hint','topbar','round_chip','round_num','mute_btn',
     'settings_btn','gear','start_screen','particles','start_title','start_panel','name_input','diff_seg',
     'best_rounds','menu_button','get_ready','game','avatar','player','wound','own_name','self_hearts',
-    'enemy_name','enemy_hearts','hit_dealer','box','image','hit_self','turn_strip','turn_text','controls',
+    'enemy_name','enemy_hearts','hit_dealer','box','image','hit_self','controls',
     'shoot_self','shoot_enemy','banner','hit_flash','input_shield','lamp','light','blackout','dark',
     'end_screen','end_winner','rank','st_rounds','st_shots','st_hp','st_best','restart_button','menu_return',
     'overlay','settings_menu','close_btn','set_sound','vol_val','vol_slider','set_haptics','set_diff','set_restart'];
 
-  /* Аварийный каркас стилей — только если styles.css не той версии */
   const CRITICAL_CSS = `
 :root{--u:min(1vh,1vw)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
@@ -178,19 +169,10 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
 .names{font-size:calc(var(--u)*3.8)}.hearts{display:flex;gap:calc(var(--u)*.5)}.hearts.right{justify-content:flex-end}
 .heart{width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);object-fit:contain}
 .heart.lost{filter:grayscale(1) brightness(.35);opacity:.45}
-.hit_dealer,.hit_self{position:absolute;z-index:2;opacity:0;pointer-events:none}
-.hit_dealer.armed,.hit_self.armed{opacity:1;pointer-events:auto}
-.hit_dealer{left:31%;top:21%;width:38%;height:31%;color:#ff3b4e}
-.hit_dealer .ret{position:absolute;inset:0;width:100%;height:100%;opacity:.6}
-.hit_self{left:0;bottom:0;width:100%;height:33.34%;color:#35c2ff;border-top:2px dashed rgba(53,194,255,.4);
- background:linear-gradient(180deg,transparent,rgba(53,194,255,.1))}
-.hit_tag{pointer-events:none;position:absolute;top:calc(var(--u)*.8);left:50%;transform:translateX(-50%);white-space:nowrap;
- font-size:calc(var(--u)*2);padding:calc(var(--u)*.5) calc(var(--u)*1);background:rgba(11,9,8,.85);border:1px solid currentColor}
-.turn_strip{position:absolute;left:3%;bottom:14%;width:44%;z-index:5;pointer-events:none;display:flex;align-items:center;
- gap:calc(var(--u)*.8);padding:calc(var(--u)*.9);font-size:calc(var(--u)*2.5);background:rgba(11,9,8,.8);
- border-left:calc(var(--u)*.6) solid #35c2ff;color:#35c2ff}
-.turn_strip.foe{color:#ff3b4e;border-left-color:#ff3b4e}.turn_strip.wait{color:#ffca18;border-left-color:#ffca18}
-.turn_strip .dot{width:calc(var(--u)*1.2);height:calc(var(--u)*1.2);border-radius:50%;background:currentColor}
+.hit_dealer,.hit_self{position:absolute;z-index:2;padding:0;border:0;background:none;pointer-events:none}
+.hit_dealer.armed,.hit_self.armed{pointer-events:auto}
+.hit_dealer{left:31%;top:21%;width:38%;height:31%}
+.hit_self{left:0;bottom:0;width:100%;height:33.34%}
 .controls{position:absolute;left:3%;bottom:2.5%;width:44%;z-index:5;display:flex;gap:calc(var(--u)*1.2)}
 .controls.idle{opacity:.45}
 .action_btn{flex:1;height:calc(var(--u)*9);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f2e3cf;border:2px solid #0b0908}
@@ -202,8 +184,6 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
  background:radial-gradient(120% 100% at 50% 50%,transparent 35%,rgba(215,38,61,.85))}.hit_flash.on{opacity:.85}
 .input_shield{position:absolute;inset:0;z-index:9;pointer-events:none}.input_shield.on{pointer-events:auto}
 .lamp{position:absolute;inset:0;z-index:10;pointer-events:none}
-.lamp_beam{position:absolute;left:50%;top:0;width:80%;height:76%;transform:translateX(-50%);
- clip-path:polygon(41% 0,59% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(255,202,24,.3),transparent)}
 .light{position:absolute;width:70%;height:62%;top:2%;left:50%;transform:translateX(-50%);object-fit:contain}
 .blackout{position:absolute;inset:0;z-index:11;pointer-events:none;display:none;background:rgba(6,5,4,.6)}
 .dark{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -279,7 +259,7 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
     stage.className = 'stage';
     const missing = REQUIRED.filter(id => !$(id));
     if (missing.length){
-      stage.innerHTML = SHELL_HTML;           // достраиваем всю сцену целиком
+      stage.innerHTML = SHELL_HTML;
       stage.setAttribute('data-tgr-build', BUILD);
     }
   }
@@ -302,7 +282,6 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
     }
   }
 
-  /* безопасные обращения к DOM */
   const style = (id,p,v)=>{ const n=$(id); if(n) n.style[p]=v; };
   const cls   = (id,c,on)=>{ const n=$(id); if(n) n.classList.toggle(c,!!on); };
   const txt   = (id,v)=>{ const n=$(id); if(n) n.textContent=v; };
@@ -359,8 +338,67 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
   function run(fn){ const gen=S.gen; Promise.resolve().then(()=>fn(gen)).catch(e=>{ if(e!==ABORT) console.error(e); }); }
   const other = s => s==='self' ? 'enemy' : 'self';
 
-  /* ===================== TELEGRAM ===================== */
-  const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  /* ===================== TELEGRAM: синхронное определение + лимит ожидания ===================== */
+  let tg = null;
+
+  function detectTelegram(){
+    try{
+      if (window.Telegram && window.Telegram.WebApp) return true;
+      if (window.TelegramWebviewProxy || window.TelegramWebview) return true;
+      const q = (location.hash || '') + '&' + (location.search || '');
+      if (/tgWebApp(Data|Platform|Version|StartParam|ThemeParams|BotUsername)/i.test(q)) return true;
+      if (/telegram/i.test(navigator.userAgent || '')) return true;
+      if (DOC.referrer && /telegram/i.test(DOC.referrer)) return true;
+    }catch(e){}
+    return false;
+  }
+
+  function loadTelegramSdk(timeout){
+    return new Promise(resolve=>{
+      const have = ()=> (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+      if (have()) return resolve(have());
+      let done = false, wd = 0, poll = 0;
+      const finish = (v)=>{ if(done) return; done = true; clearTimeout(wd); clearInterval(poll); resolve(v); };
+      wd = setTimeout(()=>finish(have()), timeout);
+      poll = setInterval(()=>{ if(have()) finish(have()); }, 120);
+      let s = DOC.querySelector('script[data-tgr-tg]') || DOC.querySelector('script[src*="telegram-web-app.js"]');
+      if (!s){
+        s = DOC.createElement('script');
+        s.src = 'https://telegram.org/js/telegram-web-app.js';
+        s.async = true;
+        s.setAttribute('data-tgr-tg','');
+        (DOC.head || DOC.documentElement).appendChild(s);
+      }
+      s.addEventListener('load', ()=>finish(have()), { once:true });
+      s.addEventListener('error', ()=>finish(null), { once:true });
+    });
+  }
+
+  function applyTelegram(sdk){
+    tg = sdk;
+    try{
+      tg.ready(); tg.expand();
+      tg.setHeaderColor && tg.setHeaderColor('#14100e');
+      tg.setBackgroundColor && tg.setBackgroundColor('#0b0908');
+      tg.disableVerticalSwipes && tg.disableVerticalSwipes();
+      tg.onEvent && tg.onEvent('viewportChanged', applyViewport);
+      tg.BackButton && tg.BackButton.onClick(closeMenu);
+      const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (u && u.first_name && store.get('name', null) === null){
+        S.name = String(u.first_name).slice(0,14);
+        const ni = $('name_input'); if (ni) ni.value = S.name;
+        txt('own_name', S.name);
+      }
+      if (S.menuOpen && tg.BackButton) tg.BackButton.show();
+    }catch(e){}
+    applyViewport();
+  }
+
+  function bootTelegram(){
+    if (!detectTelegram()) return;                 // обычный сайт: сеть не трогается, старт мгновенный
+    loadTelegramSdk(TG_TIMEOUT).then(sdk=>{ if (sdk) applyTelegram(sdk); });
+  }
+
   function haptic(kind){
     if(!S.haptics || !tg || !tg.HapticFeedback) return;
     try{
@@ -438,16 +476,6 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
     cls('hit_dealer','armed',ok); cls('hit_self','armed',ok);
     cls('controls','idle',!ok);
     dis('settings_btn', S.busy && !S.over && S.phase!=='menu');
-    const strip=$('turn_strip');
-    if(strip){
-      strip.className='turn_strip';
-      if(S.phase==='player') txt('turn_text','YOUR TURN — PICK A TARGET');
-      else if(S.phase==='ai'){ strip.classList.add('foe'); txt('turn_text','DEALER IS THINKING…'); }
-      else if(S.phase==='reload'){ strip.classList.add('wait'); txt('turn_text','RELOADING THE SHOTGUN'); }
-      else if(S.phase==='handover'){ strip.classList.add('wait'); txt('turn_text','PASSING THE SHOTGUN'); }
-      else if(S.phase==='shot'){ strip.classList.add('wait'); txt('turn_text','SHOT FIRED…'); }
-      else { strip.classList.add('wait'); txt('turn_text','STAND BY'); }
-    }
   }
   function buildHearts(){
     ['self_hearts','enemy_hearts'].forEach(id=>{
@@ -658,11 +686,13 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
           await wait(gen,600);
         }
       }else{
+        /* исходная анимация: enemy_self.gif, 2000 / 2200 / 2450, без expanded */
         if(isLive){
-          setSrc(IMG.self);
-          await wait(gen,2200);
-          sfx('self'); expand(); damage('player'); banner('LIVE — YOU ARE HIT','bad');
-          await wait(gen,400);
+          setSrc(IMG.enemySelf);
+          await wait(gen,2000); sfx('other');
+          await wait(gen,200);
+          damage('player'); banner('LIVE — YOU ARE HIT','bad');
+          await wait(gen,250);
         }else{
           setSrc(IMG.selfBlank);
           await wait(gen,2300);
@@ -718,8 +748,10 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
       await handoverTo(gen,S.turn);
       if(S.over) return;
       if(S.turn==='self'){
-        S.phase='player'; S.busy=false; setControls();
-        const t=await awaitPlayerInput();
+        S.phase='player'; S.busy=false;
+        const inputP = awaitPlayerInput();   // S.input ставится до setControls → зоны активны сразу
+        setControls();
+        const t = await inputP;
         guard(gen);
         await fire(gen,t);
       }else{
@@ -922,18 +954,7 @@ img{pointer-events:none}button{cursor:pointer;border:0;background:none;color:inh
     S.haptics=store.get('haptics',true)!==false;
     S.best=Math.max(0,parseInt(store.get('best',0),10)||0);
 
-    if(tg){
-      try{
-        tg.ready(); tg.expand();
-        tg.setHeaderColor && tg.setHeaderColor('#14100e');
-        tg.setBackgroundColor && tg.setBackgroundColor('#0b0908');
-        tg.disableVerticalSwipes && tg.disableVerticalSwipes();
-        tg.onEvent && tg.onEvent('viewportChanged',applyViewport);
-        const u=tg.initDataUnsafe && tg.initDataUnsafe.user;
-        if(u && u.first_name && store.get('name',null)===null) S.name=String(u.first_name).slice(0,14);
-        tg.BackButton && tg.BackButton.onClick(closeMenu);
-      }catch(e){}
-    }
+    bootTelegram();          // не блокирует загрузку ни на сайте, ни в Telegram
     applyViewport();
     buildAudio();
     const ni=$('name_input'); if(ni) ni.value=S.name;
