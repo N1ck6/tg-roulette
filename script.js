@@ -1,5 +1,5 @@
 'use strict';
-/* Tg Roulette — single player. Длительности и позиции анимаций — как в оригинале. */
+/* Tg Roulette — single player. Длительности анимаций и позы — как в оригинале. */
 (function () {
   const DOC = document;
   const $ = (id) => DOC.getElementById(id);
@@ -148,8 +148,9 @@
   function setControls(){
     const ok = canAct();
     $('input_shield').classList.toggle('on', !ok);
-    $('shoot_self').disabled = !ok;
-    $('shoot_enemy').disabled = !ok;
+    ['shoot_self','shoot_enemy','hit_dealer','hit_self'].forEach(id=>{ $(id).disabled = !ok; });
+    $('hit_dealer').classList.toggle('armed', ok);
+    $('hit_self').classList.toggle('armed', ok);
     $('controls').classList.toggle('idle', !ok);
     $('settings_btn').disabled = S.busy && !S.over && S.phase!=='menu';
     const strip = $('turn_strip'), txt = $('turn_text');
@@ -237,7 +238,7 @@
     });
   }
 
-  /* ---------- перезарядка (оригинальные тайминги и позы) ---------- */
+  /* ---------- перезарядка ---------- */
   async function reloadRound(gen){
     S.phase = 'reload'; S.busy = true; setControls();
     banner('RELOADING', 'info', 1600);
@@ -331,7 +332,7 @@
     return ((1-p)*tempo - p*risk) > (p * (plHp <= 2 ? 1.35 : 1)) ? 'self' : 'enemy';
   }
 
-  /* ---------- выстрел: ассеты и позы как в оригинале ---------- */
+  /* ---------- выстрел ---------- */
   async function fire(gen, target){
     guard(gen);
     if (!S.shells.length) return;
@@ -345,45 +346,59 @@
     const img = $('image');
 
     if (holder === 'self'){
+      /* ——— ИГРОК ——— */
       if (target === 'self'){
         if (isLive){
-          img.src = IMG.self;                       // первый лицо, ствол в камеру
+          img.src = IMG.self;
           await wait(gen, 2200);
-          sfx('self');
-          img.classList.add('expanded');            // ВЗРЫВ НА ВЕСЬ ЭКРАН
+          sfx('self'); img.classList.add('expanded');
           damage('player'); banner('LIVE — YOU BLEED', 'bad');
-          await wait(gen, 400);                     // 2600
+          await wait(gen, 400);                       // 2600
         } else {
           img.src = IMG.selfBlank;
           await wait(gen, 2300);
           sfx('blank'); banner('BLANK — EXTRA TURN', 'ok');
-          await wait(gen, 400);                     // 2700
+          await wait(gen, 400);                       // 2700
         }
       } else {
         if (isLive){
           img.src = IMG.other; sfx('other');
           await wait(gen, 250);
           dealerHit(); damage('ai'); banner('LIVE — DEALER HIT', 'warn');
-          await wait(gen, 700);                     // 950
+          await wait(gen, 700);                       // 950
         } else {
           nudge(img); sfx('blank'); banner('BLANK — TURN PASSES', 'info');
           await wait(gen, 600);
         }
       }
     } else {
-      /* дилер: ОРИГИНАЛЬНЫЙ enemy_self.gif, оружие остаётся в его руке (.changed) */
-      if (isLive){
-        img.src = IMG.enemySelf;
-        await wait(gen, 2000); sfx('other');
-        await wait(gen, 200);
-        if (target === 'self'){ dealerHit(); damage('ai'); banner('DEALER HIT HIMSELF', 'warn'); }
-        else { damage('player'); banner('LIVE — YOU ARE HIT', 'bad'); }
-        await wait(gen, 250);                       // 2450
+      /* ——— ДИЛЕР: ружьё всё время остаётся в его руке (.changed) ——— */
+      if (target === 'self'){
+        /* выстрел В СЕБЯ — отдельная гифка со стороны + рана на дилере */
+        if (isLive){
+          img.src = IMG.enemySelf;
+          await wait(gen, 2000); sfx('other');
+          await wait(gen, 200);
+          dealerHit(); damage('ai'); banner('DEALER HIT HIMSELF', 'warn');
+          await wait(gen, 250);                       // 2450
+        } else {
+          nudge(img); sfx('blank'); banner('DEALER CLICKED EMPTY — EXTRA TURN', 'ok');
+          await wait(gen, 600);
+        }
       } else {
-        nudge(img); sfx('blank');
-        banner(target==='self' ? 'DEALER CLICKED EMPTY — EXTRA TURN' : 'DEALER WASTED A BLANK',
-               target==='self' ? 'ok' : 'info');
-        await wait(gen, 600);
+        /* выстрел В ИГРОКА — ствол в камеру, взрыв на весь экран */
+        if (isLive){
+          img.src = IMG.self;
+          await wait(gen, 2200);
+          sfx('self'); img.classList.add('expanded');
+          damage('player'); banner('LIVE — YOU ARE HIT', 'bad');
+          await wait(gen, 400);                       // 2600
+        } else {
+          img.src = IMG.selfBlank;
+          await wait(gen, 2300);
+          sfx('blank'); banner('DEALER WASTED A BLANK', 'info');
+          await wait(gen, 400);                       // 2700
+        }
       }
     }
 
@@ -444,27 +459,26 @@
     }
   }
 
-  /* ---------- лампа ---------- */
+  /* ---------- лампа и затемнение ---------- */
   let lampId = 0;
+  function setLight(on){
+    $('lamp').style.display = on ? '' : 'none';
+    $('blackout').style.display = on ? 'none' : 'block';
+  }
   function blink(){
-    const l = $('light'), d = $('dark');
-    d.style.display = 'block'; l.style.display = 'none';
-    later(()=>{ d.style.display = 'none'; l.style.display = ''; }, 80);
+    setLight(false);
+    later(()=>setLight(true), 80);
   }
   function lightsOff(){
     if (DOC.hidden || S.over || Math.random() > .25) return;
     for (let i=0;i<3;i++) later(blink, i*300);
-    later(()=>{ $('dark').style.display='block'; $('light').style.display='none'; }, 1200);
-    later(()=>{ $('dark').style.display='none'; $('light').style.display=''; }, 3500);
+    later(()=>setLight(false), 1200);
+    later(()=>setLight(true), 3500);
   }
   function startLamp(){ stopLamp(); lampId = setInterval(lightsOff, 6000); }
-  function stopLamp(){
-    clearInterval(lampId); lampId = 0;
-    const l = $('light'), d = $('dark');
-    if (l) l.style.display = ''; if (d) d.style.display = 'none';
-  }
+  function stopLamp(){ clearInterval(lampId); lampId = 0; setLight(true); }
 
-  /* ---------- летающие GG (под слоем меню) ---------- */
+  /* ---------- летающие GG ---------- */
   const P = { items:[], raf:0, last:0, spawn:0, on:false, h:0, max:10 };
   function spawnParticle(){
     const el = DOC.createElement('div'); el.className = 'moving-img';
@@ -527,6 +541,7 @@
     $('avatar').style.marginBottom = '0';
     $('hit_flash').className = 'hit_flash';
     $('banner').className = 'banner';
+    setLight(true);
   }
   function startRun(){
     bump(); resetTable();
@@ -572,7 +587,7 @@
       await wait(gen, 2400);
       $('start_panel').classList.add('fly_out');
       $('start_title').classList.add('fly_out');
-      later(()=>$('get_ready').classList.add('show'), 500);   // появляется, когда панель ушла
+      later(()=>$('get_ready').classList.add('show'), 500);
       await wait(gen, 1600);
       sfx('vzuh');
       $('menu_button').classList.add('fly_out');
@@ -666,9 +681,14 @@
     $('best_rounds').textContent = S.best;
     syncSettings();
     buildHearts();
+    setLight(true);
 
+    /* клик: кнопки + зоны */
     $('shoot_self').addEventListener('click', ()=>act('self'));
     $('shoot_enemy').addEventListener('click', ()=>act('enemy'));
+    $('hit_self').addEventListener('click', ()=>act('self'));
+    $('hit_dealer').addEventListener('click', ()=>act('enemy'));
+
     $('menu_button').addEventListener('click', playFromMenu);
     $('restart_button').addEventListener('click', ()=>{ sfx('button'); startRun(); });
     $('menu_return').addEventListener('click', ()=>{ sfx('button'); backToMenu(); });
