@@ -1,5 +1,5 @@
 'use strict';
-/* Tg Roulette — single player. Все длительности анимаций сохранены из оригинала (привязаны к GIF). */
+/* Tg Roulette — single player. Длительности и позиции анимаций — как в оригинале. */
 (function () {
   const DOC = document;
   const $ = (id) => DOC.getElementById(id);
@@ -21,22 +21,20 @@
   const HP_BY_DIFF = { easy:5, normal:4, hard:3 };
   const SHELLS_PER_ROUND = 8;
 
-  /* ---------- state (в замыкании: из консоли не подменить) ---------- */
   const S = {
     gen:0, phase:'boot', busy:true, over:false, menuOpen:false,
     turn:'self', holder:'self', shells:[], live:0, blank:0,
     hp:{player:4, ai:4}, maxHp:4, round:1, shots:0, loadedOnce:false,
     pendingWinner:null, lastAction:0, input:null,
-    name:'Player', diff:'normal', muted:false, volume:.8, haptics:true, tracker:true, best:0
+    name:'Player', diff:'normal', muted:false, volume:.8, haptics:true, best:0
   };
 
-  /* ---------- storage ---------- */
   const store = {
     get(k, d){ try{ const v = localStorage.getItem('tgr_'+k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
     set(k, v){ try{ localStorage.setItem('tgr_'+k, JSON.stringify(v)); }catch(e){} }
   };
 
-  /* ---------- cancellable timing ---------- */
+  /* ---------- отменяемое время ---------- */
   const pending = new Set();
   const timeouts = new Set();
   function guard(gen){ if (gen !== S.gen) throw ABORT; }
@@ -48,7 +46,7 @@
       const finish = ()=>{ if(done) return; done = true; clean(); resolve(); };
       const cancel = ()=>{ if(done) return; done = true; clean(); reject(ABORT); };
       const tick = (now)=>{ const dt = now - last; last = now;
-        if (!DOC.hidden) left -= dt;                 // фон = пауза, GIF не рассинхронизируются
+        if (!DOC.hidden) left -= dt;
         if (left <= 0) return finish();
         raf = requestAnimationFrame(tick); };
       const watchdog = ()=>{ if (DOC.hidden) wd = setTimeout(watchdog, 1000); else finish(); };
@@ -92,14 +90,13 @@
     P.h = Math.min(w,h);
   }
 
-  /* ---------- audio (пул голосов + фолбэк-синтез) ---------- */
+  /* ---------- audio ---------- */
   const VOICES = {}; let ac = null, unlocked = false;
   function buildAudio(){
     Object.keys(SFX).forEach(k=>{
       const a = new Audio(SFX[k]); a.preload = 'auto';
       const b = new Audio(SFX[k]); b.preload = 'auto';
-      VOICES[k] = { list:[a,b], i:0, bad:false };
-      [a,b].forEach(x=>x.addEventListener('error', ()=>{ VOICES[k].bad = true; }));
+      VOICES[k] = { list:[a,b], i:0 };
     });
   }
   function sfx(name){
@@ -108,7 +105,7 @@
     try{ a.volume = S.volume; a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(()=>synth(name)); }
     catch(e){ synth(name); }
   }
-  function synth(name){ // если .ogg не поддерживается (старый iOS) — не оставляем игру без звука
+  function synth(name){
     if (S.muted) return;
     try{
       ac = ac || new (window.AudioContext||window.webkitAudioContext)();
@@ -136,7 +133,7 @@
     }));
   }
 
-  /* ---------- ui helpers ---------- */
+  /* ---------- ui ---------- */
   let bannerT = 0;
   function banner(text, kind, ms){
     const el = $('banner');
@@ -178,8 +175,7 @@
     [['self_hearts','player'],['enemy_hearts','ai']].forEach(([id,who])=>{
       const kids = $(id).children, alive = S.hp[who];
       for (let i=0;i<kids.length;i++){
-        const lost = i >= alive;
-        kids[i].classList.toggle('lost', lost);
+        kids[i].classList.toggle('lost', i >= alive);
         if (broken===who && i===alive){
           kids[i].classList.add('breaking');
           later(()=>kids[i] && kids[i].classList.remove('breaking'), 360);
@@ -188,22 +184,10 @@
     });
   }
   function renderRound(){ $('round_num').textContent = S.round; }
-  function renderTracker(){
-    $('tk_live').textContent  = S.tracker ? S.live  : '?';
-    $('tk_blank').textContent = S.tracker ? S.blank : '?';
-    const pips = $('pips');
-    if (pips.children.length !== SHELLS_PER_ROUND){
-      pips.innerHTML = '';
-      for (let i=0;i<SHELLS_PER_ROUND;i++) pips.appendChild(DOC.createElement('i'));
-    }
-    for (let i=0;i<SHELLS_PER_ROUND;i++)
-      pips.children[i].classList.toggle('spent', i >= S.shells.length);
-  }
   function flash(gold){
     const f = $('hit_flash');
     f.className = 'hit_flash' + (gold?' gold':'');
-    void f.offsetWidth;
-    f.classList.add('on');
+    void f.offsetWidth; f.classList.add('on');
     later(()=>{ f.className = 'hit_flash'; }, 340);
     if (!gold){
       const st = $('stage'); st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake');
@@ -219,6 +203,10 @@
     later(()=>{ w.classList.add('hidden'); }, 300);
     flash(true); haptic('medium');
   }
+  function nudge(img){
+    img.style.transform = 'translateY(5%)';
+    later(()=>{ img.style.transform = ''; }, 300);
+  }
   function damage(who){
     if (S.hp[who] <= 0) return;
     S.hp[who] = Math.max(0, S.hp[who]-1);
@@ -227,7 +215,7 @@
     if (S.hp[who] <= 0) S.pendingWinner = who==='player' ? 'ai' : 'player';
   }
 
-  /* ---------- shells ---------- */
+  /* ---------- патроны ---------- */
   function makeShells(){
     const min = S.round >= 5 ? 3 : 2, max = S.round >= 3 ? 5 : 4;
     const live = min + Math.floor(Math.random()*(max-min+1));
@@ -235,7 +223,7 @@
     for (let i=0;i<live;i++) arr[i] = true;
     return arr;
   }
-  function shuffle(a){ // Fisher–Yates вместо предвзятого sort(() => Math.random()-.5)
+  function shuffle(a){
     for (let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; }
     return a;
   }
@@ -249,7 +237,7 @@
     });
   }
 
-  /* ---------- reload (тайминги 1:1 как в оригинале) ---------- */
+  /* ---------- перезарядка (оригинальные тайминги и позы) ---------- */
   async function reloadRound(gen){
     S.phase = 'reload'; S.busy = true; setControls();
     banner('RELOADING', 'info', 1600);
@@ -261,7 +249,7 @@
 
     const arr = makeShells();
     S.live = arr.filter(Boolean).length; S.blank = SHELLS_PER_ROUND - S.live;
-    renderBox(arr); renderTracker(); renderRound();
+    renderBox(arr); renderRound();
     box.style.opacity = '1';
 
     await anim(gen, img, [
@@ -313,10 +301,9 @@
     ], { duration:400, easing:'ease-in-out' });
 
     S.shells = shuffle(arr);
-    renderTracker();
   }
 
-  /* ---------- handover (1200ms CSS + 600 + 1000, как в оригинале) ---------- */
+  /* ---------- передача дробовика ---------- */
   async function handoverTo(gen, target){
     if (S.holder === target) return;
     S.phase = 'handover'; S.busy = true; setControls();
@@ -330,7 +317,7 @@
     img.style.transition = '';
   }
 
-  /* ---------- AI: считает по РЕАЛЬНО оставшимся патронам ---------- */
+  /* ---------- ИИ ---------- */
   function aiChoose(){
     const n = S.shells.length; if (!n) return 'self';
     const p = S.live / n, aiHp = S.hp.ai, plHp = S.hp.player;
@@ -341,12 +328,10 @@
     if (plHp === 1 && p >= .34) return 'enemy';
     const tempo = S.diff === 'hard' ? 1.15 : .9;
     const risk  = aiHp <= 2 ? 1.7 : 1;
-    const selfScore  = (1-p)*tempo - p*risk;
-    const enemyScore = p * (plHp <= 2 ? 1.35 : 1);
-    return selfScore > enemyScore ? 'self' : 'enemy';
+    return ((1-p)*tempo - p*risk) > (p * (plHp <= 2 ? 1.35 : 1)) ? 'self' : 'enemy';
   }
 
-  /* ---------- shot ---------- */
+  /* ---------- выстрел: ассеты и позы как в оригинале ---------- */
   async function fire(gen, target){
     guard(gen);
     if (!S.shells.length) return;
@@ -355,68 +340,66 @@
     const isLive = S.shells.shift();
     S.shots++;
     if (isLive) S.live = Math.max(0, S.live-1); else S.blank = Math.max(0, S.blank-1);
-    renderTracker();
 
     const holder = S.holder;
-    const shooter = holder === 'self' ? 'player' : 'ai';
-    const victim  = target === 'self' ? shooter : (shooter === 'player' ? 'ai' : 'player');
-    const camera  = (shooter==='player' && target==='self') || (shooter==='ai' && target==='enemy');
     const img = $('image');
 
-    if (camera){
-      img.classList.remove('changed');
-      img.style.transition = 'all 200ms ease-in-out';
-      if (isLive){
-        img.src = IMG.self;
-        await wait(gen, 2200);
-        sfx('self'); img.classList.add('expanded'); damage(victim);
-        banner(victim==='player' ? 'LIVE — YOU BLEED' : 'LIVE — DEALER BLEEDS', 'bad');
-        await wait(gen, 400);                       // total 2600
+    if (holder === 'self'){
+      if (target === 'self'){
+        if (isLive){
+          img.src = IMG.self;                       // первый лицо, ствол в камеру
+          await wait(gen, 2200);
+          sfx('self');
+          img.classList.add('expanded');            // ВЗРЫВ НА ВЕСЬ ЭКРАН
+          damage('player'); banner('LIVE — YOU BLEED', 'bad');
+          await wait(gen, 400);                     // 2600
+        } else {
+          img.src = IMG.selfBlank;
+          await wait(gen, 2300);
+          sfx('blank'); banner('BLANK — EXTRA TURN', 'ok');
+          await wait(gen, 400);                     // 2700
+        }
       } else {
-        img.src = IMG.selfBlank;
-        await wait(gen, 2300);
-        sfx('blank');
-        banner(target==='self' ? 'BLANK — EXTRA TURN' : 'DEALER WASTED A BLANK', target==='self'?'ok':'info');
-        await wait(gen, 400);                       // total 2700
-      }
-    } else if (shooter === 'player'){
-      if (isLive){
-        img.src = IMG.other; sfx('other');
-        await wait(gen, 250);
-        dealerHit(); damage('ai'); banner('LIVE — DEALER HIT', 'warn');
-        await wait(gen, 700);                       // total 950
-      } else {
-        img.style.transform = 'translateY(5%)'; later(()=>{ img.style.transform=''; }, 300);
-        sfx('blank'); banner('BLANK — TURN PASSES', 'info');
-        await wait(gen, 600);
+        if (isLive){
+          img.src = IMG.other; sfx('other');
+          await wait(gen, 250);
+          dealerHit(); damage('ai'); banner('LIVE — DEALER HIT', 'warn');
+          await wait(gen, 700);                     // 950
+        } else {
+          nudge(img); sfx('blank'); banner('BLANK — TURN PASSES', 'info');
+          await wait(gen, 600);
+        }
       }
     } else {
+      /* дилер: ОРИГИНАЛЬНЫЙ enemy_self.gif, оружие остаётся в его руке (.changed) */
       if (isLive){
         img.src = IMG.enemySelf;
         await wait(gen, 2000); sfx('other');
         await wait(gen, 200);
-        dealerHit(); damage('ai'); banner('DEALER HIT HIMSELF', 'warn');
-        await wait(gen, 250);                       // total 2450
+        if (target === 'self'){ dealerHit(); damage('ai'); banner('DEALER HIT HIMSELF', 'warn'); }
+        else { damage('player'); banner('LIVE — YOU ARE HIT', 'bad'); }
+        await wait(gen, 250);                       // 2450
       } else {
-        img.style.transform = 'translateY(5%)'; later(()=>{ img.style.transform=''; }, 300);
-        sfx('blank'); banner('DEALER CLICKED EMPTY — EXTRA TURN', 'ok');
+        nudge(img); sfx('blank');
+        banner(target==='self' ? 'DEALER CLICKED EMPTY — EXTRA TURN' : 'DEALER WASTED A BLANK',
+               target==='self' ? 'ok' : 'info');
         await wait(gen, 600);
       }
     }
 
     img.classList.remove('expanded');
-    img.style.transition = ''; img.style.transform = '';
+    img.style.transform = '';
     img.classList.toggle('changed', holder === 'enemy');
     img.src = holder === 'enemy' ? IMG.enemyStill : IMG.still;
 
     if (S.pendingWinner){ gameOver(S.pendingWinner); return; }
     sfx('reload');
     await wait(gen, 450);
-    const extra = (target === 'self' && !isLive);   // правило доп. хода наконец работает
+    const extra = (target === 'self' && !isLive);
     S.turn = extra ? S.turn : other(S.turn);
   }
 
-  /* ---------- input ---------- */
+  /* ---------- ввод ---------- */
   function awaitPlayerInput(){
     return new Promise((resolve, reject)=>{
       let settled = false;
@@ -427,16 +410,16 @@
   }
   function act(target){
     const now = performance.now();
-    if (now - S.lastAction < 220) return;           // анти-спам
+    if (now - S.lastAction < 220) return;
     if (!canAct()) return;
     S.lastAction = now;
-    S.busy = true; S.phase = 'shot'; setControls(); // щит поднимается мгновенно
+    S.busy = true; S.phase = 'shot'; setControls();
     haptic('light'); sfx('button');
     const fn = S.input; S.input = null;
     if (fn) fn(target);
   }
 
-  /* ---------- main loop ---------- */
+  /* ---------- цикл ---------- */
   async function gameLoop(gen){
     while (true){
       guard(gen);
@@ -461,7 +444,7 @@
     }
   }
 
-  /* ---------- lamp ambience ---------- */
+  /* ---------- лампа ---------- */
   let lampId = 0;
   function blink(){
     const l = $('light'), d = $('dark');
@@ -481,42 +464,39 @@
     if (l) l.style.display = ''; if (d) d.style.display = 'none';
   }
 
-  /* ---------- menu particles: один rAF на все ---------- */
+  /* ---------- летающие GG (под слоем меню) ---------- */
   const P = { items:[], raf:0, last:0, spawn:0, on:false, h:0, max:10 };
   function spawnParticle(){
     const el = DOC.createElement('div'); el.className = 'moving-img';
     const k = .3 + Math.random()*.5, top = Math.random() < .5;
     const xr = Math.random() < .5 ? [5,25] : [75,95];
-    const x = xr[0] + Math.random()*(xr[1]-xr[0]);
     const size = k*10;
-    el.style.left = x+'%'; el.style.width = size+'%'; el.style.height = size+'%';
+    el.style.left = (xr[0] + Math.random()*(xr[1]-xr[0]))+'%';
+    el.style.width = size+'%'; el.style.height = size+'%';
     $('particles').appendChild(el);
-    P.items.push({ el, y: top ? -12 : 104, dir: top ? 1 : -1, v: (1 + (1-k)*2)*.06, rot:(Math.random()*60)-30 });
+    P.items.push({ el, y: top ? -10 : 100, dir: top ? 1 : -1,
+                   v:(1 + (1-k)*2)/16.67, rot:(Math.random()*60)-30 });
   }
   function pTick(now){
     if (!P.on) return;
     const dt = Math.min(50, now - P.last); P.last = now;
-    const visible = !DOC.hidden && !$('start_screen').classList.contains('hidden');
-    if (visible){
+    if (!DOC.hidden && !$('start_screen').classList.contains('hidden')){
       P.spawn += dt;
       if (P.spawn > 600 && P.items.length < P.max){ P.spawn = 0; spawnParticle(); }
       const h = P.h || DOC.body.clientHeight || 1;
       for (let i=P.items.length-1;i>=0;i--){
         const it = P.items[i];
         it.y += it.v * dt * (it.dir?1:-1) / h * 100;
-        if (it.y > 112 || it.y < -12){ it.el.remove(); P.items.splice(i,1); continue; }
+        if (it.y > 104 || it.y < -12){ it.el.remove(); P.items.splice(i,1); continue; }
         it.el.style.transform = 'translate3d(0,'+(it.y/100*h)+'px,0) rotate('+it.rot+'deg)';
       }
     }
     P.raf = requestAnimationFrame(pTick);
   }
   function startParticles(){ if (P.on) return; P.on = true; P.last = performance.now(); P.raf = requestAnimationFrame(pTick); }
-  function stopParticles(){
-    P.on = false; cancelAnimationFrame(P.raf);
-    P.items.forEach(i=>i.el.remove()); P.items.length = 0;
-  }
+  function stopParticles(){ P.on = false; cancelAnimationFrame(P.raf); P.items.forEach(i=>i.el.remove()); P.items.length = 0; }
 
-  /* ---------- screens ---------- */
+  /* ---------- экраны ---------- */
   function gameOver(winner){
     if (S.over) return;
     S.over = true; S.phase = 'over'; S.busy = true;
@@ -553,9 +533,10 @@
     S.over = false; S.pendingWinner = null; S.shells = []; S.live = 0; S.blank = 0;
     S.round = 1; S.shots = 0; S.loadedOnce = false; S.turn = 'self'; S.holder = 'self';
     S.maxHp = HP_BY_DIFF[S.diff] || 4; S.hp = { player:S.maxHp, ai:S.maxHp };
-    buildHearts(); renderRound(); renderTracker();
+    buildHearts(); renderRound();
     $('own_name').textContent = S.name;
     $('enemy_name').textContent = 'Dealer';
+    $('get_ready').classList.remove('show');
     $('start_screen').classList.add('hidden');
     $('end_screen').classList.add('hidden');
     $('game').classList.remove('hidden');
@@ -573,7 +554,7 @@
     $('topbar').classList.add('corner');
     $('start_panel').classList.remove('fly_out');
     $('start_title').classList.remove('fly_out');
-    $('get_ready').classList.add('hidden');
+    $('get_ready').classList.remove('show');
     $('menu_button').disabled = false;
     $('menu_button').classList.remove('fly_out');
     $('best_rounds').textContent = S.best;
@@ -586,22 +567,21 @@
     S.name = raw ? raw.slice(0,14) : 'Player'; store.set('name', S.name);
     sfx('button'); haptic('light');
     $('menu_button').disabled = true;
-    $('get_ready').classList.remove('hidden');
     later(()=>sfx('countdown'), 400);
     run(async (gen)=>{
-      await wait(gen, 2400);                        // оригинальный интро-тайминг
+      await wait(gen, 2400);
       $('start_panel').classList.add('fly_out');
       $('start_title').classList.add('fly_out');
+      later(()=>$('get_ready').classList.add('show'), 500);   // появляется, когда панель ушла
       await wait(gen, 1600);
       sfx('vzuh');
       $('menu_button').classList.add('fly_out');
-      $('get_ready').classList.add('hidden');
       await wait(gen, 1000);
       startRun();
     });
   }
 
-  /* ---------- settings ---------- */
+  /* ---------- настройки ---------- */
   function openMenu(){
     if (S.menuOpen) return;
     S.menuOpen = true;
@@ -624,18 +604,16 @@
     $('mute_btn').classList.toggle('muted', S.muted);
     $('set_sound').setAttribute('aria-pressed', String(!S.muted));
     $('set_haptics').setAttribute('aria-pressed', String(S.haptics));
-    $('set_tracker').setAttribute('aria-pressed', String(S.tracker));
     $('vol_slider').value = Math.round(S.volume*100);
     $('vol_val').textContent = Math.round(S.volume*100)+'%';
     DOC.querySelectorAll('.seg_btn').forEach(b=>b.classList.toggle('active', b.dataset.diff === S.diff));
-    renderTracker();
   }
   function setDiff(d){
     if (!HP_BY_DIFF[d]) return;
     S.diff = d; store.set('diff', d); syncSettings(); sfx('button'); haptic('light');
   }
 
-  /* ---------- preload ---------- */
+  /* ---------- прелоад ---------- */
   function preload(){
     const imgs = Object.values(IMG), snds = Object.values(SFX);
     const total = imgs.length + snds.length;
@@ -668,7 +646,6 @@
     S.muted = !!store.get('muted', false);
     S.volume = Math.min(1, Math.max(0, Number(store.get('volume', .8)) || 0));
     S.haptics = store.get('haptics', true) !== false;
-    S.tracker = store.get('tracker', true) !== false;
     S.best = Math.max(0, parseInt(store.get('best', 0), 10) || 0);
 
     if (tg){
@@ -688,9 +665,8 @@
     $('name_input').value = S.name;
     $('best_rounds').textContent = S.best;
     syncSettings();
-    buildHearts(); renderTracker();
+    buildHearts();
 
-    /* controls */
     $('shoot_self').addEventListener('click', ()=>act('self'));
     $('shoot_enemy').addEventListener('click', ()=>act('enemy'));
     $('menu_button').addEventListener('click', playFromMenu);
@@ -708,7 +684,6 @@
       S.muted = !S.muted; store.set('muted', S.muted); syncSettings(); if (!S.muted) sfx('button');
     });
     $('set_haptics').addEventListener('click', ()=>{ S.haptics = !S.haptics; store.set('haptics', S.haptics); syncSettings(); haptic('light'); });
-    $('set_tracker').addEventListener('click', ()=>{ S.tracker = !S.tracker; store.set('tracker', S.tracker); syncSettings(); sfx('button'); });
     $('vol_slider').addEventListener('input', (e)=>{
       S.volume = Number(e.target.value)/100; store.set('volume', S.volume);
       $('vol_val').textContent = e.target.value+'%';
@@ -719,7 +694,6 @@
     DOC.querySelectorAll('.seg_btn').forEach(b=>b.addEventListener('click', ()=>setDiff(b.dataset.diff)));
     $('name_input').addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); playFromMenu(); } });
 
-    /* keyboard */
     DOC.addEventListener('keydown', (e)=>{
       if (e.target && e.target.tagName === 'INPUT') return;
       const k = e.key.toLowerCase();
@@ -731,13 +705,12 @@
       else if (k === 'r' && S.over) startRun();
     });
 
-    /* анти-абуз ввода */
     DOC.addEventListener('pointerdown', unlockAudio, { once:true });
     DOC.addEventListener('contextmenu', e=>e.preventDefault());
     DOC.addEventListener('dragstart', e=>e.preventDefault());
     DOC.addEventListener('dblclick', e=>e.preventDefault(), { passive:false });
     DOC.addEventListener('gesturestart', e=>e.preventDefault());
-    DOC.addEventListener('visibilitychange', ()=>{ if (DOC.hidden) setControls(); else setControls(); });
+    DOC.addEventListener('visibilitychange', setControls);
     let rt = 0;
     window.addEventListener('resize', ()=>{ clearTimeout(rt); rt = setTimeout(applyViewport, 120); });
     window.addEventListener('orientationchange', ()=>setTimeout(applyViewport, 250));

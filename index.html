@@ -19,7 +19,7 @@
     <div class="load_hint" id="load_hint">Loading assets… 0%</div>
   </div>
 
-  <!-- ================= TOP BAR (always reachable) ================= -->
+  <!-- ================= TOP BAR ================= -->
   <div class="topbar corner hidden" id="topbar">
     <div class="round_chip" id="round_chip">ROUND <b id="round_num">1</b></div>
     <button class="icon_btn" id="mute_btn" type="button" aria-label="Toggle sound" title="Sound (M)">
@@ -34,6 +34,7 @@
   <!-- ================= START ================= -->
   <section class="startScreen hidden" id="start_screen">
     <div class="particles" id="particles"></div>
+
     <div class="start_ui">
       <h1 class="menu_text" id="start_title">Tg Roulette</h1>
 
@@ -42,22 +43,28 @@
           <span class="field_label">YOUR NAME</span>
           <input id="name_input" class="name_input" type="text" maxlength="14" autocomplete="off" spellcheck="false" value="Player">
         </label>
-
-        <div class="field">
-          <span class="field_label">DEALER SKILL</span>
-          <div class="seg" id="diff_seg" role="group" aria-label="Difficulty">
-            <button class="seg_btn" data-diff="easy" type="button">ROOKIE</button>
-            <button class="seg_btn" data-diff="normal" type="button">DEALER</button>
-            <button class="seg_btn" data-diff="hard" type="button">RUTHLESS</button>
-          </div>
+        <div class="seg" id="diff_seg" role="group" aria-label="Difficulty">
+          <button class="seg_btn" data-diff="easy" type="button">ROOKIE</button>
+          <button class="seg_btn" data-diff="normal" type="button">DEALER</button>
+          <button class="seg_btn" data-diff="hard" type="button">RUTHLESS</button>
         </div>
-
-        <div class="best_line">BEST RUN <b id="best_rounds">0</b> ROUNDS</div>
+        <div class="best_line">BEST <b id="best_rounds">0</b> ROUNDS</div>
       </div>
 
-      <div class="get_ready hidden" id="get_ready">GET READY</div>
       <button class="style_button menu_button" id="menu_button" type="button">PLAY</button>
       <div class="hint_line">Blank at yourself → you keep the turn</div>
+
+      <!-- заставка интро: появляется только после ухода панели -->
+      <div class="get_ready" id="get_ready" aria-hidden="true">
+        <div class="gr_inner">
+          <div class="gr_rule"></div>
+          <div class="gr_kicker">CHAMBER SEALED · SHELLS SHUFFLED</div>
+          <div class="gr_title" data-text="GET READY">GET READY</div>
+          <div class="gr_sub">THE DEALER IS RACKING THE SHOTGUN</div>
+          <div class="gr_bar"><i></i></div>
+          <div class="gr_rule"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -83,17 +90,12 @@
       <div class="hearts right" id="enemy_hearts"></div>
     </div>
 
-    <div class="tracker" id="tracker">
-      <div class="tk_chip live"><i></i><span id="tk_live">0</span></div>
-      <div class="tk_chip blank"><i></i><span id="tk_blank">0</span></div>
-      <div class="pips" id="pips"></div>
-    </div>
-
     <div id="box" class="box"></div>
 
-    <div class="bottom">
-      <img id="image" class="image" src="data/still.png" alt="">
-    </div>
+    <div class="bottom"></div>
+
+    <!-- ПРЯМОЙ потомок .game: .expanded = весь экран, .changed = рука дилера -->
+    <img id="image" class="image" src="data/still.png" alt="">
 
     <div class="turn_strip" id="turn_strip" aria-live="polite"><i class="dot"></i><span id="turn_text">YOUR TURN</span></div>
 
@@ -149,10 +151,6 @@
     <div class="set_row">
       <span>Haptics</span>
       <button class="toggle" id="set_haptics" type="button" aria-pressed="true"><i></i></button>
-    </div>
-    <div class="set_row">
-      <span>Shell tracker</span>
-      <button class="toggle" id="set_tracker" type="button" aria-pressed="true"><i></i></button>
     </div>
     <div class="set_col">
       <span class="set_hint">Dealer skill · hearts apply next run</span>
