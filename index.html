@@ -1,91 +1,172 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tg Roulette</title>
-    <link rel="icon" href="data/favicon.ico">
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#14100e">
+<title>Tg Roulette</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="startScreen" id="start_screen">
-        <div class="overlay" id="overlay"></div>
-        <div class="settings-btn" onclick="toggleMenu()">
-            <img src="data/gear.svg" class="gear">
-        </div>
-        <div class="menu" id="settings-menu">
-            <button class="close-btn" onclick="toggleMenu()">X</button>
-            <p class="info_text"><strong>Rules:</strong><br>
-                Each round, the shotgun is loaded with a random mix of live and blank shells. Players take turns choosing to shoot themselves or the enemy. A live shell results in losing one heart, a blank shell allows you to gain another turn if shot at yourself. The objective is to deplete the enemy's hearts before losing all of yours.
-            </p>
-        </div>
-        <div class="start_ui">
-            <span class="menu_text">Tg&nbsp;Roulette</span>
-            <div class="menuChoice" id="1p">
-                <button class="menu_button style_button ready" onclick="start_game('Nicki', 'Dealer')">1 Player</button>
-                <button class="menu_button style_button" onclick="show_menu()">2 Players</button>
-            </div>
+<div class="stage" id="stage">
 
-            <div class="menuChoice hidden" id="2p">
-            <div class="names players" id="loading_names">
-                Player1:&nbsp;<span id="player1">Loading</span><br>
-                Player2:&nbsp;<span id="player2">Loading</span></div>
-            <button class="menu_button style_button ready" id="menu_button" onclick="get_started('Nicki')">Ready</button>
-            <button class="menu_button style_button" id="menu_back_button" onclick="show_menu()">Back</button>
-            </div>
+  <!-- ================= LOADING ================= -->
+  <div class="loadingScreen" id="loading_screen">
+    <div class="load_brand">TG<span>ROULETTE</span></div>
+    <div class="spinner"></div>
+    <div class="load_bar"><i id="load_fill"></i></div>
+    <div class="load_hint" id="load_hint">Loading assets… 0%</div>
+  </div>
+
+  <!-- ================= TOP BAR (always reachable) ================= -->
+  <div class="topbar corner hidden" id="topbar">
+    <div class="round_chip" id="round_chip">ROUND <b id="round_num">1</b></div>
+    <button class="icon_btn" id="mute_btn" type="button" aria-label="Toggle sound" title="Sound (M)">
+      <svg class="ico ico_on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8c1.6 1.2 1.6 6.8 0 8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 5c3 3 3 11 0 14" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      <svg class="ico ico_off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    <button class="icon_btn" id="settings_btn" type="button" aria-label="Rules and settings" title="Rules & settings">
+      <img class="gear" id="gear" src="data/gear.svg" alt="">
+    </button>
+  </div>
+
+  <!-- ================= START ================= -->
+  <section class="startScreen hidden" id="start_screen">
+    <div class="particles" id="particles"></div>
+    <div class="start_ui">
+      <h1 class="menu_text" id="start_title">Tg Roulette</h1>
+
+      <div class="start_panel" id="start_panel">
+        <label class="field">
+          <span class="field_label">YOUR NAME</span>
+          <input id="name_input" class="name_input" type="text" maxlength="14" autocomplete="off" spellcheck="false" value="Player">
+        </label>
+
+        <div class="field">
+          <span class="field_label">DEALER SKILL</span>
+          <div class="seg" id="diff_seg" role="group" aria-label="Difficulty">
+            <button class="seg_btn" data-diff="easy" type="button">ROOKIE</button>
+            <button class="seg_btn" data-diff="normal" type="button">DEALER</button>
+            <button class="seg_btn" data-diff="hard" type="button">RUTHLESS</button>
+          </div>
         </div>
+
+        <div class="best_line">BEST RUN <b id="best_rounds">0</b> ROUNDS</div>
+      </div>
+
+      <div class="get_ready hidden" id="get_ready">GET READY</div>
+      <button class="style_button menu_button" id="menu_button" type="button">PLAY</button>
+      <div class="hint_line">Blank at yourself → you keep the turn</div>
     </div>
-    <div class="game hidden" id="game">
-        <div class="top" onclick="shoot('data/other.gif', 'enemy')">
-            <div class="avatar" id="player">
-                <img src="data/opponent.jpg" class="player2">
-                <img src="data/wound.gif" class="wound hidden" id="wound">
-            </div>
-        </div>
-        <div class="lightning">
-            <img src="data/light.png" class="light" id="light">
-            <img src="data/dark.png" class="dark" id="dark">
-        </div>
-        <div id="box" class="box"></div>
-        <div class="bottom" onclick="shoot('data/self.gif', 'self')">
-        </div>
-        <img class="image" id="image" src="data/still.png">
-        <div class="UI" id="UI">
-            <div class="ui_self" id="ui_self">
-                <span class="names" id="own_name">You</span>
-                <div class="hearts" id="heartsContainer">
-                    <img class="heart" id="self_heart" src="data/hp.png">
-                    <img class="heart" id="self_heart" src="data/hp.png">
-                    <img class="heart" id="self_heart" src="data/hp.png">
-                    <img class="heart" id="self_heart" src="data/hp.png">
-                </div>
-            </div>
-            <div class="ui_enemy" id="ui_enemy">
-                <span class="names" id="enemy_name">Enemy</span>
-                <div class="hearts" id="heartsContainer">
-                    <img class="heart" id="enemy_heart" src="data/hp.png">
-                    <img class="heart" id="enemy_heart" src="data/hp.png">
-                    <img class="heart" id="enemy_heart" src="data/hp.png">
-                    <img class="heart" id="enemy_heart" src="data/hp.png">
-                </div>
-            </div>
-        </div>
+  </section>
+
+  <!-- ================= GAME ================= -->
+  <section class="game hidden" id="game">
+    <div class="top">
+      <div class="lightning">
+        <img id="light" class="light" src="data/light.png" alt="">
+        <img id="dark" class="dark" src="data/dark.png" alt="">
+      </div>
+      <div class="avatar" id="avatar">
+        <img id="player" class="player2" src="data/opponent.jpg" alt="Dealer">
+        <img id="wound" class="wound hidden" src="data/wound.gif" alt="">
+      </div>
     </div>
-    <div class="endScreen hidden" id="end_screen">
-        <span class="end_text names" id="end_winner">Winner: </span>
-        <span class="end_logo names">GAME OVER</span>
-        <button class="restart_button style_button" id="restart_button" onclick="restart()">Restart</button>
+
+    <div class="ui_self">
+      <div class="names" id="own_name">You</div>
+      <div class="hearts" id="self_hearts"></div>
     </div>
-    <audio id="game_over" src="data/sounds/game_over.ogg"></audio>
-    <audio id="blank" src="data/sounds/blank.ogg"></audio>
-    <audio id="self" src="data/sounds/self.ogg"></audio>
-    <audio id="reload" src="data/sounds/reload.ogg"></audio>
-    <audio id="other" src="data/sounds/other.ogg"></audio>
-    <audio id="button" src="data/sounds/button.ogg"></audio>
-    <audio id="countdown" src="data/sounds/countdown.ogg"></audio>
-    <audio id="put" src="data/sounds/put.ogg"></audio>
-    <audio id="vzuh" src="data/sounds/vzuh.ogg"></audio>
-    <audio id="shake" src="data/sounds/shake.ogg"></audio>
-    <script src="script.js"></script>
+    <div class="ui_enemy">
+      <div class="names" id="enemy_name">Dealer</div>
+      <div class="hearts right" id="enemy_hearts"></div>
+    </div>
+
+    <div class="tracker" id="tracker">
+      <div class="tk_chip live"><i></i><span id="tk_live">0</span></div>
+      <div class="tk_chip blank"><i></i><span id="tk_blank">0</span></div>
+      <div class="pips" id="pips"></div>
+    </div>
+
+    <div id="box" class="box"></div>
+
+    <div class="bottom">
+      <img id="image" class="image" src="data/still.png" alt="">
+    </div>
+
+    <div class="turn_strip" id="turn_strip" aria-live="polite"><i class="dot"></i><span id="turn_text">YOUR TURN</span></div>
+
+    <div class="controls" id="controls">
+      <button class="action_btn self" id="shoot_self" type="button" title="Shoot yourself (1 / ←)">
+        <b>SHOOT</b><span>YOU</span>
+      </button>
+      <button class="action_btn enemy" id="shoot_enemy" type="button" title="Shoot the dealer (2 / →)">
+        <b>SHOOT</b><span>DEALER</span>
+      </button>
+    </div>
+
+    <div class="banner" id="banner" aria-live="polite"></div>
+    <div class="hit_flash" id="hit_flash"></div>
+    <div class="input_shield on" id="input_shield"></div>
+  </section>
+
+  <!-- ================= END ================= -->
+  <section class="endScreen hidden" id="end_screen">
+    <div class="end_logo">GAME OVER</div>
+    <div class="end_text" id="end_winner">YOU SURVIVED</div>
+    <div class="rank" id="rank">STEADY HAND</div>
+    <div class="end_stats">
+      <div class="stat"><span>ROUNDS</span><b id="st_rounds">0</b></div>
+      <div class="stat"><span>SHOTS</span><b id="st_shots">0</b></div>
+      <div class="stat"><span>HEARTS</span><b id="st_hp">0</b></div>
+      <div class="stat"><span>BEST</span><b id="st_best">0</b></div>
+    </div>
+    <button class="style_button restart_button" id="restart_button" type="button">RESTART</button>
+    <button class="ghost_button" id="menu_return" type="button">MAIN MENU</button>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <div class="overlay" id="overlay"></div>
+  <div class="menu" id="settings_menu" role="dialog" aria-modal="true" aria-label="Rules and settings">
+    <button class="close-btn" id="close_btn" type="button" aria-label="Close">✕</button>
+    <h2 class="menu_title">RULES</h2>
+    <p class="info_text">
+      The shotgun is loaded with a hidden mix of <b class="c_live">live</b> and <b class="c_blank">blank</b> shells.
+      Shoot yourself or the dealer. A live shell costs one heart. A blank fired at yourself gives you
+      <b class="c_ok">another turn</b>. Empty the dealer's hearts before he empties yours.
+    </p>
+
+    <h2 class="menu_title">SETTINGS</h2>
+    <div class="set_row">
+      <span>Sound</span>
+      <button class="toggle" id="set_sound" type="button" aria-pressed="true"><i></i></button>
+    </div>
+    <div class="set_row">
+      <span>Volume <b id="vol_val">80%</b></span>
+      <input class="slider" id="vol_slider" type="range" min="0" max="100" step="5" value="80" aria-label="Volume">
+    </div>
+    <div class="set_row">
+      <span>Haptics</span>
+      <button class="toggle" id="set_haptics" type="button" aria-pressed="true"><i></i></button>
+    </div>
+    <div class="set_row">
+      <span>Shell tracker</span>
+      <button class="toggle" id="set_tracker" type="button" aria-pressed="true"><i></i></button>
+    </div>
+    <div class="set_col">
+      <span class="set_hint">Dealer skill · hearts apply next run</span>
+      <div class="seg" id="set_diff" role="group" aria-label="Difficulty">
+        <button class="seg_btn" data-diff="easy" type="button">ROOKIE</button>
+        <button class="seg_btn" data-diff="normal" type="button">DEALER</button>
+        <button class="seg_btn" data-diff="hard" type="button">RUTHLESS</button>
+      </div>
+    </div>
+    <button class="danger_button" id="set_restart" type="button">RESTART RUN</button>
+    <p class="keys_hint">Keys: <b>1</b> shoot you · <b>2</b> shoot dealer · <b>M</b> mute · <b>Esc</b> close</p>
+  </div>
+
+</div>
+<script src="script.js" defer></script>
 </body>
 </html>
